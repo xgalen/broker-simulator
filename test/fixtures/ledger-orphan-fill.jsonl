@@ -1,0 +1,2 @@
+{"id":"f-001","ts":"2026-09-15T20:30:02Z","portfolio":"orphan","type":"DEPOSIT","amountEur":100.00}
+{"id":"f-002","ts":"2026-09-16T20:30:00Z","portfolio":"orphan","type":"ORDER_FILLED","orderId":"never-placed","ticker":"SAP.DE","side":"buy","qty":0.1000,"priceLocal":100.00,"currency":"EUR","fxRate":1,"grossEur":10.00,"feeEur":1.00,"fxCostEur":0.00,"netEur":11.00}

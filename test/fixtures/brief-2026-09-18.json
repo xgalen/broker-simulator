@@ -1,0 +1,10 @@
+{
+  "briefHash": "sha256:2b5e3d9c4f7a0b1d6e9c2f5a8b1e4d7c0f3a6b9e2d5c8f1a4b7e0d3c6f9a2b5e",
+  "date": "2026-09-18",
+  "decisionIds": ["d-v-4"],
+  "instruments": {
+    "SAP.DE": { "open": 152.40, "high": 152.80, "low": 150.70, "close": 151.00, "previousClose": 152.50 },
+    "IWDA.AS": { "open": 98.90, "high": 99.10, "low": 97.80, "close": 98.00, "previousClose": 99.00 },
+    "AAPL": { "open": 204.00, "high": 206.50, "low": 203.50, "close": 205.00, "previousClose": 210.00 }
+  }
+}

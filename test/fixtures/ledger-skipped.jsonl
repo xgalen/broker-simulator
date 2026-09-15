@@ -1,0 +1,4 @@
+{"id":"k-001","ts":"2026-09-15T20:30:02Z","portfolio":"value","type":"DEPOSIT","amountEur":100.00}
+{"id":"k-002","ts":"2026-09-15T20:30:05Z","portfolio":"value","type":"VALUATION","cashEur":100.00,"positions":[],"marketValueEur":0.00,"fxEffectEur":0.00,"contributedToDateEur":100.00}
+{"id":"k-003","ts":"2026-09-16T20:30:04Z","portfolio":"value","type":"SKIPPED","reason":"price fetch failed: circuit breaker open after 3 retries"}
+{"id":"k-004","ts":"2026-09-16T20:30:04Z","portfolio":"dca","type":"SKIPPED","reason":"price fetch failed: circuit breaker open after 3 retries"}

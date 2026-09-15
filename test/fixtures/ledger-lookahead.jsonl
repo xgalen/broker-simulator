@@ -1,0 +1,3 @@
+{"id":"l-001","ts":"2026-09-15T20:30:02Z","portfolio":"leaky","type":"DEPOSIT","amountEur":100.00}
+{"id":"l-002","ts":"2026-09-15T20:30:03Z","portfolio":"leaky","type":"ORDER_PLACED","decisionId":"d-l-1","ticker":"SAP.DE","side":"buy","targetEur":60.00,"reason":"buying the close it just read"}
+{"id":"l-003","ts":"2026-09-16T20:30:00Z","portfolio":"leaky","type":"ORDER_FILLED","orderId":"l-002","ticker":"SAP.DE","side":"buy","qty":0.4000,"priceLocal":145.80,"currency":"EUR","fxRate":1,"grossEur":58.32,"feeEur":1.00,"fxCostEur":0.00,"netEur":59.32}

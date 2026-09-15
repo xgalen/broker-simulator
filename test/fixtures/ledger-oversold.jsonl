@@ -1,0 +1,5 @@
+{"id":"o-001","ts":"2026-09-15T20:30:02Z","portfolio":"oversold","type":"DEPOSIT","amountEur":200.00}
+{"id":"o-002","ts":"2026-09-15T20:30:03Z","portfolio":"oversold","type":"ORDER_PLACED","decisionId":"d-o-1","ticker":"SAP.DE","side":"buy","targetEur":100.00,"reason":"open a position"}
+{"id":"o-003","ts":"2026-09-16T20:30:00Z","portfolio":"oversold","type":"ORDER_FILLED","orderId":"o-002","ticker":"SAP.DE","side":"buy","qty":1.0000,"priceLocal":99.00,"currency":"EUR","fxRate":1,"grossEur":99.00,"feeEur":1.00,"fxCostEur":0.00,"netEur":100.00}
+{"id":"o-004","ts":"2026-09-16T20:30:03Z","portfolio":"oversold","type":"ORDER_PLACED","decisionId":"d-o-2","ticker":"SAP.DE","side":"sell","targetEur":200.00,"reason":"selling twice what it holds"}
+{"id":"o-005","ts":"2026-09-17T20:30:00Z","portfolio":"oversold","type":"ORDER_FILLED","orderId":"o-004","ticker":"SAP.DE","side":"sell","qty":2.0000,"priceLocal":100.00,"currency":"EUR","fxRate":1,"grossEur":200.00,"feeEur":1.00,"fxCostEur":0.00,"netEur":199.00}
