@@ -1,0 +1,2 @@
+{"id":"m-001","ts":"2026-09-15T20:30:02Z","portfolio":"drifted","type":"DEPOSIT","amountEur":100.00}
+{"id":"m-002","ts":"2026-09-15T20:30:05Z","portfolio":"drifted","type":"VALUATION","cashEur":120.00,"positions":[{"ticker":"SAP.DE","qty":0.4000,"priceLocal":150.00,"currency":"EUR","fxRate":1,"valueEur":60.00}],"marketValueEur":60.00,"fxEffectEur":0.00,"contributedToDateEur":100.00}

@@ -1,0 +1,3 @@
+{"id":"w-001","ts":"2026-09-15T20:30:02Z","portfolio":"rogue","type":"DEPOSIT","amountEur":100.00}
+{"id":"w-002","ts":"2026-09-15T20:30:03Z","portfolio":"rogue","type":"ORDER_PLACED","decisionId":"d-w-1","ticker":"TSLA","side":"buy","targetEur":40.00,"reason":"a ticker that is not in the universe"}
+{"id":"w-003","ts":"2026-09-16T20:30:00Z","portfolio":"rogue","type":"ORDER_FILLED","orderId":"w-002","ticker":"TSLA","side":"buy","qty":0.2000,"priceLocal":245.00,"currency":"USD","fxRate":1.2500,"grossEur":39.20,"feeEur":1.00,"fxCostEur":0.10,"netEur":40.30}

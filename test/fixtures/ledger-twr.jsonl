@@ -1,0 +1,9 @@
+{"id":"t-001","ts":"2026-01-02T20:30:02Z","portfolio":"twr","type":"DEPOSIT","amountEur":100.00}
+{"id":"t-002","ts":"2026-01-02T20:30:03Z","portfolio":"twr","type":"ORDER_PLACED","decisionId":"d-t-1","ticker":"IWDA.AS","side":"buy","targetEur":100.00,"reason":"seed the control position"}
+{"id":"t-003","ts":"2026-01-02T20:30:05Z","portfolio":"twr","type":"VALUATION","cashEur":100.00,"positions":[],"marketValueEur":0.00,"fxEffectEur":0.00,"contributedToDateEur":100.00}
+{"id":"t-004","ts":"2026-01-05T20:30:00Z","portfolio":"twr","type":"ORDER_FILLED","orderId":"t-002","ticker":"IWDA.AS","side":"buy","qty":1.0000,"priceLocal":99.00,"currency":"EUR","fxRate":1,"grossEur":99.00,"feeEur":1.00,"fxCostEur":0.00,"netEur":100.00}
+{"id":"t-005","ts":"2026-01-05T20:30:05Z","portfolio":"twr","type":"VALUATION","cashEur":0.00,"positions":[{"ticker":"IWDA.AS","qty":1.0000,"priceLocal":100.00,"currency":"EUR","fxRate":1,"valueEur":100.00}],"marketValueEur":100.00,"fxEffectEur":0.00,"contributedToDateEur":100.00}
+{"id":"t-006","ts":"2026-01-06T20:30:05Z","portfolio":"twr","type":"VALUATION","cashEur":0.00,"positions":[{"ticker":"IWDA.AS","qty":1.0000,"priceLocal":110.00,"currency":"EUR","fxRate":1,"valueEur":110.00}],"marketValueEur":110.00,"fxEffectEur":0.00,"contributedToDateEur":100.00}
+{"id":"t-007","ts":"2026-02-02T20:30:02Z","portfolio":"twr","type":"DEPOSIT","amountEur":50.00}
+{"id":"t-008","ts":"2026-02-02T20:30:05Z","portfolio":"twr","type":"VALUATION","cashEur":50.00,"positions":[{"ticker":"IWDA.AS","qty":1.0000,"priceLocal":110.00,"currency":"EUR","fxRate":1,"valueEur":110.00}],"marketValueEur":110.00,"fxEffectEur":0.00,"contributedToDateEur":150.00}
+{"id":"t-009","ts":"2026-02-03T20:30:05Z","portfolio":"twr","type":"VALUATION","cashEur":50.00,"positions":[{"ticker":"IWDA.AS","qty":1.0000,"priceLocal":99.00,"currency":"EUR","fxRate":1,"valueEur":99.00}],"marketValueEur":99.00,"fxEffectEur":0.00,"contributedToDateEur":150.00}

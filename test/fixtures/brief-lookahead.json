@@ -1,0 +1,8 @@
+{
+  "briefHash": "sha256:deadbeef00000000000000000000000000000000000000000000000000000000",
+  "date": "2026-09-15",
+  "decisionIds": ["d-l-1"],
+  "instruments": {
+    "SAP.DE": { "open": 145.00, "high": 146.20, "low": 144.10, "close": 145.80, "previousClose": 144.50 }
+  }
+}
