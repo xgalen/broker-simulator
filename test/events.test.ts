@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  EVENT_TYPES,
   EventParseError,
+  LedgerEventSchema,
   parseEvent,
   parseEventLog,
 } from "../src/domain/events.js";
@@ -73,5 +75,43 @@ describe("event log parsing", () => {
     const text = '{"id":"a","ts":"2026-09-15T20:30:00Z","portfolio":"p","type":"SKIPPED","reason":"r"}\nnot json\n';
     expect(() => parseEventLog(text)).toThrow(EventParseError);
     expect(() => parseEventLog(text)).toThrow(/line 2/);
+  });
+});
+
+describe("event schemas", () => {
+  it("defines a schema for every declared event type (SPEC 4)", () => {
+    const covered = LedgerEventSchema.options.map(
+      (option) => option.shape.type.value,
+    );
+    expect([...covered].sort()).toEqual([...EVENT_TYPES].sort());
+  });
+
+  it("validates without throwing, for callers that collect errors", () => {
+    const result = LedgerEventSchema.safeParse({
+      id: "x",
+      ts: "2026-09-15T20:30:00Z",
+      portfolio: "value",
+      type: "DEPOSIT",
+      amountEur: -1,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("strips fields the ledger does not define, so nothing rides along", () => {
+    const event = parseEvent({
+      id: "x",
+      ts: "2026-09-15T20:30:00Z",
+      portfolio: "value",
+      type: "DEPOSIT",
+      amountEur: 50,
+      smuggled: "a price the agent should not have",
+    });
+    expect(event).toEqual({
+      id: "x",
+      ts: "2026-09-15T20:30:00Z",
+      portfolio: "value",
+      type: "DEPOSIT",
+      amountEur: 50,
+    });
   });
 });

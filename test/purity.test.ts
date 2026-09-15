@@ -23,6 +23,14 @@ const FORBIDDEN: readonly { pattern: RegExp; why: string }[] = [
   { pattern: /\bMath\.random\s*\(/, why: "is non-deterministic" },
 ];
 
+/**
+ * The only outside packages the domain may import. `zod` is pure validation:
+ * it performs no I/O, reads no clock and adds no non-determinism, and it is
+ * what turns an untrusted JSON line into a `LedgerEvent`. Anything else in
+ * this set needs the same argument made for it first.
+ */
+const ALLOWED_PACKAGES = new Set(["zod"]);
+
 describe("src/domain purity", () => {
   it("has modules to check", () => {
     expect(files.length).toBeGreaterThan(5);
@@ -38,14 +46,16 @@ describe("src/domain purity", () => {
     });
   }
 
-  it("imports nothing outside the domain", () => {
+  it("imports nothing outside the domain but its schema library", () => {
     for (const file of files) {
       const source = readFileSync(join(domainDir, file), "utf8");
       const imports = [...source.matchAll(/from\s+["']([^"']+)["']/g)].map(
         (match) => match[1] ?? "",
       );
       for (const specifier of imports) {
-        expect(specifier.startsWith("./"), `${file} imports ${specifier}`).toBe(true);
+        const allowed =
+          specifier.startsWith("./") || ALLOWED_PACKAGES.has(specifier);
+        expect(allowed, `${file} imports ${specifier}`).toBe(true);
       }
     }
   });

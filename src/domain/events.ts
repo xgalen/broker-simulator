@@ -5,10 +5,13 @@
  * source of truth in the system; `state.json` is a cache derived from it.
  * Events are immutable: nothing here ever mutates a balance in place.
  *
- * Parsing is hand-written rather than delegated to a schema library so that
- * the domain core has zero runtime dependencies and every rejection carries a
- * precise, loggable reason.
+ * The zod schemas below are the single definition of each event: the
+ * TypeScript types are inferred from them, so a field can never be validated
+ * and typed differently. `zod` is the one dependency the domain core takes —
+ * it is pure, and parsing is the boundary where untrusted JSON becomes a
+ * `LedgerEvent`.
  */
+import { z } from "zod";
 import type {
   Currency,
   DecisionId,
@@ -33,32 +36,68 @@ export const EVENT_TYPES = [
 
 export type EventType = (typeof EVENT_TYPES)[number];
 
-/** Fields carried by every event. */
-export interface EventBase {
-  readonly id: string;
-  readonly ts: IsoTimestamp;
-  readonly portfolio: PortfolioId;
-  readonly type: EventType;
-}
+// --- Field vocabulary -------------------------------------------------------
+//
+// Named once so every event validates a ticker, an amount or an FX rate by the
+// same rule, and so the messages a rejection carries are uniform.
+
+/** A non-empty string: ids, tickers, reasons. A blank reason is not a reason. */
+const text = z.string().min(1);
+
+/** A string that may legitimately be empty, such as a rejection's detail. */
+const optionalText = z.string();
+
+/** Any finite EUR amount, sign allowed (cash and P&L lines can go negative). */
+const amount = z.number().refine(Number.isFinite, "must be a finite number");
+
+/** A finite amount that may not be negative. */
+const nonNegative = amount.refine((value) => value >= 0, "must be >= 0");
+
+/** Strictly positive: prices per unit of FX, split ratios. */
+const positive = amount.refine((value) => value > 0, "must be > 0");
+
+const side = z.literal(["buy", "sell"]);
+
+const ISO_TS = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
+
+/** ISO-8601, UTC, to the second or millisecond. Local offsets are refused. */
+const timestamp = z
+  .string()
+  .refine(
+    (value) => ISO_TS.test(value) && !Number.isNaN(Date.parse(value)),
+    "must be an ISO-8601 UTC timestamp",
+  );
+
+/** Fields carried by every event (SPEC 4). */
+const eventBase = {
+  id: text,
+  ts: timestamp,
+  portfolio: text,
+} as const;
+
+// --- The nine event types ---------------------------------------------------
 
 /** The monthly contribution, and the 100 EUR seed on day one. */
-export interface DepositEvent extends EventBase {
-  readonly type: "DEPOSIT";
-  readonly amountEur: number;
-}
+export const DepositEventSchema = z.object({
+  ...eventBase,
+  type: z.literal("DEPOSIT"),
+  amountEur: nonNegative,
+});
 
 /**
  * An order queued by today's decision. It moves no cash: it is filled at the
  * next session's open (SPEC 1.1, no look-ahead).
  */
-export interface OrderPlacedEvent extends EventBase {
-  readonly type: "ORDER_PLACED";
-  readonly decisionId: DecisionId;
-  readonly ticker: Ticker;
-  readonly side: Side;
-  readonly targetEur: number;
-  readonly reason: string;
-}
+export const OrderPlacedEventSchema = z.object({
+  ...eventBase,
+  type: z.literal("ORDER_PLACED"),
+  decisionId: text,
+  ticker: text,
+  side,
+  /** EUR to deploy, not a share count (SPEC 7). */
+  targetEur: nonNegative,
+  reason: text,
+});
 
 /**
  * A fill of a previously placed order, at the open of the day after the
@@ -69,93 +108,148 @@ export interface OrderPlacedEvent extends EventBase {
  * it is `grossEur + feeEur + fxCostEur` (cash out), for a sell
  * `grossEur - feeEur - fxCostEur` (cash in).
  */
-export interface OrderFilledEvent extends EventBase {
-  readonly type: "ORDER_FILLED";
-  readonly orderId: OrderId;
-  readonly ticker: Ticker;
-  readonly side: Side;
-  readonly qty: number;
-  readonly priceLocal: number;
-  readonly currency: Currency;
-  readonly fxRate: number;
-  readonly grossEur: number;
-  readonly feeEur: number;
-  readonly fxCostEur: number;
-  readonly netEur: number;
-}
+export const OrderFilledEventSchema = z.object({
+  ...eventBase,
+  type: z.literal("ORDER_FILLED"),
+  orderId: text,
+  ticker: text,
+  side,
+  qty: nonNegative,
+  priceLocal: nonNegative,
+  currency: text,
+  fxRate: positive,
+  grossEur: nonNegative,
+  feeEur: nonNegative,
+  fxCostEur: nonNegative,
+  netEur: nonNegative,
+});
 
 /** A rejected order. Recorded for audit; touches no balance (SPEC 1.6). */
-export interface OrderRejectedEvent extends EventBase {
-  readonly type: "ORDER_REJECTED";
-  readonly orderId: OrderId;
-  readonly reasonCode: string;
-  readonly detail: string;
-}
+export const OrderRejectedEventSchema = z.object({
+  ...eventBase,
+  type: z.literal("ORDER_REJECTED"),
+  orderId: text,
+  reasonCode: text,
+  detail: optionalText,
+});
 
 /** A decision to do nothing. A first-class outcome (SPEC 1.7). */
-export interface HoldEvent extends EventBase {
-  readonly type: "HOLD";
-  readonly decisionId: DecisionId;
-  readonly reason: string;
-}
+export const HoldEventSchema = z.object({
+  ...eventBase,
+  type: z.literal("HOLD"),
+  decisionId: text,
+  reason: text,
+});
 
 /** Cash dividend, net of withholding. */
-export interface DividendEvent extends EventBase {
-  readonly type: "DIVIDEND";
-  readonly ticker: Ticker;
-  readonly amountLocal: number;
-  readonly currency: Currency;
-  readonly fxRate: number;
-  readonly withholdingEur: number;
-  readonly netEur: number;
-}
+export const DividendEventSchema = z.object({
+  ...eventBase,
+  type: z.literal("DIVIDEND"),
+  ticker: text,
+  amountLocal: nonNegative,
+  currency: text,
+  fxRate: positive,
+  withholdingEur: nonNegative,
+  netEur: nonNegative,
+});
 
 /** Share split: quantity is multiplied by `ratio`, entry price divided by it. */
-export interface SplitEvent extends EventBase {
-  readonly type: "SPLIT";
-  readonly ticker: Ticker;
-  readonly ratio: number;
-}
+export const SplitEventSchema = z.object({
+  ...eventBase,
+  type: z.literal("SPLIT"),
+  ticker: text,
+  ratio: positive,
+});
 
 /** A position line inside a VALUATION mark. */
-export interface ValuationPosition {
-  readonly ticker: Ticker;
-  readonly qty: number;
-  readonly priceLocal: number;
-  readonly currency: Currency;
-  readonly fxRate: number;
-  readonly valueEur: number;
-}
+export const ValuationPositionSchema = z.object({
+  ticker: text,
+  qty: nonNegative,
+  priceLocal: nonNegative,
+  currency: text,
+  fxRate: positive,
+  valueEur: amount,
+});
 
 /**
  * The daily mark, written every trading day including days with no activity.
  * `marketValueEur` is the positions only; total equity is `cash + market`.
  */
-export interface ValuationEvent extends EventBase {
-  readonly type: "VALUATION";
-  readonly cashEur: number;
-  readonly positions: readonly ValuationPosition[];
-  readonly marketValueEur: number;
-  readonly fxEffectEur: number;
-  readonly contributedToDateEur: number;
-}
+export const ValuationEventSchema = z.object({
+  ...eventBase,
+  type: z.literal("VALUATION"),
+  cashEur: amount,
+  positions: z.array(ValuationPositionSchema).readonly(),
+  marketValueEur: amount,
+  /** Cumulative EUR effect of FX, kept apart from the price contribution. */
+  fxEffectEur: amount,
+  contributedToDateEur: amount,
+});
 
 /** Data failure, budget exhaustion or market holiday (SPEC 1.5). */
-export interface SkippedEvent extends EventBase {
-  readonly type: "SKIPPED";
-  readonly reason: string;
-}
+export const SkippedEventSchema = z.object({
+  ...eventBase,
+  type: z.literal("SKIPPED"),
+  reason: text,
+});
 
-export type LedgerEvent =
-  | DepositEvent
-  | OrderPlacedEvent
-  | OrderFilledEvent
-  | OrderRejectedEvent
-  | HoldEvent
-  | DividendEvent
-  | SplitEvent
-  | ValuationEvent
-  | SkippedEvent;
+/** Any line of `events.jsonl`, discriminated on `type`. */
+export const LedgerEventSchema = z.discriminatedUnion("type", [
+  DepositEventSchema,
+  OrderPlacedEventSchema,
+  OrderFilledEventSchema,
+  OrderRejectedEventSchema,
+  HoldEventSchema,
+  DividendEventSchema,
+  SplitEventSchema,
+  ValuationEventSchema,
+  SkippedEventSchema,
+]);
+
+// --- Types, inferred from the schemas ---------------------------------------
+//
+// `Readonly` is applied here rather than per field: events are immutable once
+// written, and the mapped type distributes over the union so narrowing on
+// `type` keeps working.
+
+export type DepositEvent = Readonly<z.infer<typeof DepositEventSchema>>;
+export type OrderPlacedEvent = Readonly<z.infer<typeof OrderPlacedEventSchema>>;
+export type OrderFilledEvent = Readonly<z.infer<typeof OrderFilledEventSchema>>;
+export type OrderRejectedEvent = Readonly<
+  z.infer<typeof OrderRejectedEventSchema>
+>;
+export type HoldEvent = Readonly<z.infer<typeof HoldEventSchema>>;
+export type DividendEvent = Readonly<z.infer<typeof DividendEventSchema>>;
+export type SplitEvent = Readonly<z.infer<typeof SplitEventSchema>>;
+export type ValuationPosition = Readonly<
+  z.infer<typeof ValuationPositionSchema>
+>;
+export type ValuationEvent = Readonly<z.infer<typeof ValuationEventSchema>>;
+export type SkippedEvent = Readonly<z.infer<typeof SkippedEventSchema>>;
+export type LedgerEvent = Readonly<z.infer<typeof LedgerEventSchema>>;
+
+/** Fields carried by every event. */
+export type EventBase = Readonly<{
+  id: string;
+  ts: IsoTimestamp;
+  portfolio: PortfolioId;
+  type: EventType;
+}>;
+
+// The scalar aliases in `types.ts` document intent at the call sites; assert
+// here that the schemas still produce what those aliases stand for, so a
+// change to either side is a compile error rather than a silent drift.
+export type ScalarAliasChecks = [
+  Expect<DepositEvent["portfolio"], PortfolioId>,
+  Expect<DepositEvent["ts"], IsoTimestamp>,
+  Expect<OrderPlacedEvent["decisionId"], DecisionId>,
+  Expect<OrderPlacedEvent["side"], Side>,
+  Expect<OrderFilledEvent["orderId"], OrderId>,
+  Expect<OrderFilledEvent["ticker"], Ticker>,
+  Expect<OrderFilledEvent["currency"], Currency>,
+  Expect<LedgerEvent["type"], EventType>,
+];
+type Expect<Actual extends Expected, Expected> = Actual;
 
 /** Narrowing helper for the discriminated union. */
 export function isEventOfType<T extends EventType>(
@@ -164,6 +258,8 @@ export function isEventOfType<T extends EventType>(
 ): event is Extract<LedgerEvent, { type: T }> {
   return event.type === type;
 }
+
+// --- Parsing ----------------------------------------------------------------
 
 /** Thrown when a log line is not a well-formed event. */
 export class EventParseError extends Error {
@@ -176,72 +272,43 @@ export class EventParseError extends Error {
   }
 }
 
-type Raw = Record<string, unknown>;
-
-function req(raw: Raw, key: string): unknown {
-  if (!(key in raw)) throw new EventParseError(`missing field "${key}"`);
-  return raw[key];
+function pathOf(issue: z.core.$ZodIssue): string {
+  return issue.path
+    .map((segment, index) =>
+      typeof segment === "number"
+        ? `[${segment}]`
+        : index === 0
+          ? segment
+          : `.${String(segment)}`,
+    )
+    .join("");
 }
 
-function str(raw: Raw, key: string, { allowEmpty = false } = {}): string {
-  const value = req(raw, key);
-  if (typeof value !== "string") {
-    throw new EventParseError(`field "${key}" must be a string`);
-  }
-  if (!allowEmpty && value.length === 0) {
-    throw new EventParseError(`field "${key}" must not be empty`);
-  }
-  return value;
-}
+/**
+ * Turn zod's first issue into one precise, loggable sentence. Every rejection
+ * names the field it is about: these messages end up in CI output and in the
+ * workflow log, where "invalid input" would cost someone an hour.
+ */
+function describeIssue(issue: z.core.$ZodIssue): string {
+  const field = pathOf(issue);
+  if (field.length === 0) return issue.message;
 
-function num(raw: Raw, key: string, { min }: { min?: number } = {}): number {
-  const value = req(raw, key);
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    throw new EventParseError(`field "${key}" must be a finite number`);
+  switch (issue.code) {
+    case "invalid_type":
+      return issue.input === undefined
+        ? `missing field "${field}"`
+        : `field "${field}" must be a ${issue.expected === "number" ? "finite number" : issue.expected}`;
+    case "too_small":
+      return issue.origin === "string"
+        ? `field "${field}" must not be empty`
+        : `field "${field}" must be >= ${String(issue.minimum)}, got ${String(issue.input)}`;
+    case "invalid_value":
+      return `field "${field}" must be ${issue.values.map((value) => JSON.stringify(value)).join(" or ")}`;
+    case "custom":
+      return `field "${field}" ${issue.message}, got ${JSON.stringify(issue.input)}`;
+    default:
+      return `field "${field}" ${issue.message}`;
   }
-  if (min !== undefined && value < min) {
-    throw new EventParseError(`field "${key}" must be >= ${min}, got ${value}`);
-  }
-  return value;
-}
-
-function side(raw: Raw, key: string): Side {
-  const value = str(raw, key);
-  if (value !== "buy" && value !== "sell") {
-    throw new EventParseError(`field "${key}" must be "buy" or "sell"`);
-  }
-  return value;
-}
-
-const ISO_TS = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
-
-function timestamp(raw: Raw): IsoTimestamp {
-  const value = str(raw, "ts");
-  if (!ISO_TS.test(value) || Number.isNaN(Date.parse(value))) {
-    throw new EventParseError(`field "ts" must be an ISO-8601 UTC timestamp`);
-  }
-  return value;
-}
-
-function positions(raw: Raw): readonly ValuationPosition[] {
-  const value = req(raw, "positions");
-  if (!Array.isArray(value)) {
-    throw new EventParseError(`field "positions" must be an array`);
-  }
-  return value.map((entry, index) => {
-    if (typeof entry !== "object" || entry === null) {
-      throw new EventParseError(`positions[${index}] must be an object`);
-    }
-    const p = entry as Raw;
-    return {
-      ticker: str(p, "ticker"),
-      qty: num(p, "qty", { min: 0 }),
-      priceLocal: num(p, "priceLocal", { min: 0 }),
-      currency: str(p, "currency"),
-      fxRate: num(p, "fxRate", { min: Number.MIN_VALUE }),
-      valueEur: num(p, "valueEur"),
-    };
-  });
 }
 
 /** Validate one already-JSON-decoded object as a ledger event. */
@@ -249,86 +316,25 @@ export function parseEvent(input: unknown): LedgerEvent {
   if (typeof input !== "object" || input === null || Array.isArray(input)) {
     throw new EventParseError("event must be a JSON object");
   }
-  const raw = input as Raw;
-  const base = {
-    id: str(raw, "id"),
-    ts: timestamp(raw),
-    portfolio: str(raw, "portfolio"),
-  };
-  const type = str(raw, "type");
 
-  switch (type) {
-    case "DEPOSIT":
-      return { ...base, type, amountEur: num(raw, "amountEur", { min: 0 }) };
-    case "ORDER_PLACED":
-      return {
-        ...base,
-        type,
-        decisionId: str(raw, "decisionId"),
-        ticker: str(raw, "ticker"),
-        side: side(raw, "side"),
-        targetEur: num(raw, "targetEur", { min: 0 }),
-        reason: str(raw, "reason"),
-      };
-    case "ORDER_FILLED":
-      return {
-        ...base,
-        type,
-        orderId: str(raw, "orderId"),
-        ticker: str(raw, "ticker"),
-        side: side(raw, "side"),
-        qty: num(raw, "qty", { min: 0 }),
-        priceLocal: num(raw, "priceLocal", { min: 0 }),
-        currency: str(raw, "currency"),
-        fxRate: num(raw, "fxRate", { min: Number.MIN_VALUE }),
-        grossEur: num(raw, "grossEur", { min: 0 }),
-        feeEur: num(raw, "feeEur", { min: 0 }),
-        fxCostEur: num(raw, "fxCostEur", { min: 0 }),
-        netEur: num(raw, "netEur", { min: 0 }),
-      };
-    case "ORDER_REJECTED":
-      return {
-        ...base,
-        type,
-        orderId: str(raw, "orderId"),
-        reasonCode: str(raw, "reasonCode"),
-        detail: str(raw, "detail", { allowEmpty: true }),
-      };
-    case "HOLD":
-      return {
-        ...base,
-        type,
-        decisionId: str(raw, "decisionId"),
-        reason: str(raw, "reason"),
-      };
-    case "DIVIDEND":
-      return {
-        ...base,
-        type,
-        ticker: str(raw, "ticker"),
-        amountLocal: num(raw, "amountLocal", { min: 0 }),
-        currency: str(raw, "currency"),
-        fxRate: num(raw, "fxRate", { min: Number.MIN_VALUE }),
-        withholdingEur: num(raw, "withholdingEur", { min: 0 }),
-        netEur: num(raw, "netEur", { min: 0 }),
-      };
-    case "SPLIT":
-      return { ...base, type, ratio: num(raw, "ratio", { min: Number.MIN_VALUE }), ticker: str(raw, "ticker") };
-    case "VALUATION":
-      return {
-        ...base,
-        type,
-        cashEur: num(raw, "cashEur"),
-        positions: positions(raw),
-        marketValueEur: num(raw, "marketValueEur"),
-        fxEffectEur: num(raw, "fxEffectEur"),
-        contributedToDateEur: num(raw, "contributedToDateEur"),
-      };
-    case "SKIPPED":
-      return { ...base, type, reason: str(raw, "reason") };
-    default:
-      throw new EventParseError(`unknown event type "${type}"`);
+  // Checked before the union so an unrecognised type is reported as itself
+  // rather than as nine simultaneous shape mismatches.
+  const type: unknown = (input as Record<string, unknown>)["type"];
+  if (typeof type !== "string") {
+    throw new EventParseError('missing field "type"');
   }
+  if (!(EVENT_TYPES as readonly string[]).includes(type)) {
+    throw new EventParseError(`unknown event type "${type}"`);
+  }
+
+  const result = LedgerEventSchema.safeParse(input);
+  if (!result.success) {
+    const issue = result.error.issues[0];
+    throw new EventParseError(
+      issue === undefined ? "invalid event" : describeIssue(issue),
+    );
+  }
+  return result.data;
 }
 
 /**
