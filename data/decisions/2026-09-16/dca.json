@@ -1,0 +1,34 @@
+{
+  "action": "trade",
+  "briefHash": "sha256:8a717deb5800e21f7f3a93ebd172ff1d3ff39a30b9b834624ee65c08f76bf53f",
+  "confidence": 5,
+  "date": "2026-09-16",
+  "decidedAt": "2026-09-16T21:39:27.294Z",
+  "decisionId": "2026-09-16/dca/dec",
+  "kind": "control",
+  "meta": {
+    "availableCashEur": 100,
+    "depositedTodayEur": 100,
+    "portfolioValueEur": 100,
+    "tradesThisMonth": 0
+  },
+  "orders": [
+    {
+      "detail": null,
+      "invalidation": "Nothing invalidates this order. dca never sells; the strategy is falsified only by an agent beating it after fees, which is the experiment.",
+      "orderId": "2026-09-16/dca/ord/1",
+      "reasonCode": null,
+      "side": "buy",
+      "status": "placed",
+      "targetEur": 100,
+      "thesis": "Buy and hold a single global equity ETF. This control expresses no view: it is the passive baseline every agent is scored against.",
+      "ticker": "IWDA.AS"
+    }
+  ],
+  "portfolio": "dca",
+  "rationale": "Monthly contribution of 100.00 EUR deployed into IWDA.AS, together with 0.00 EUR left over from earlier months.",
+  "schemaVersion": 1,
+  "sourcesUsed": [
+    "sha256:8a717deb5800e21f7f3a93ebd172ff1d3ff39a30b9b834624ee65c08f76bf53f"
+  ]
+}

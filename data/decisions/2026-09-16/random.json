@@ -1,0 +1,34 @@
+{
+  "action": "trade",
+  "briefHash": "sha256:8a717deb5800e21f7f3a93ebd172ff1d3ff39a30b9b834624ee65c08f76bf53f",
+  "confidence": 1,
+  "date": "2026-09-16",
+  "decidedAt": "2026-09-16T21:39:27.295Z",
+  "decisionId": "2026-09-16/random/dec",
+  "kind": "control",
+  "meta": {
+    "availableCashEur": 100,
+    "depositedTodayEur": 100,
+    "portfolioValueEur": 100,
+    "tradesThisMonth": 0
+  },
+  "orders": [
+    {
+      "detail": null,
+      "invalidation": "Nothing invalidates this order. The control never sells and holds no view that could be proven wrong.",
+      "orderId": "2026-09-16/random/ord/1",
+      "reasonCode": null,
+      "side": "buy",
+      "status": "placed",
+      "targetEur": 100,
+      "thesis": "No thesis. This control exists to measure how much of an agent's result survives comparison with an arbitrary long position carrying identical fees.",
+      "ticker": "EBS.VI"
+    }
+  ],
+  "portfolio": "random",
+  "rationale": "Uniform draw over 150 whitelisted instruments for 2026-09 selected EBS.VI (draw 1, seed \"broker-simulator/random/v1\"). 100.00 EUR deployed.",
+  "schemaVersion": 1,
+  "sourcesUsed": [
+    "sha256:8a717deb5800e21f7f3a93ebd172ff1d3ff39a30b9b834624ee65c08f76bf53f"
+  ]
+}

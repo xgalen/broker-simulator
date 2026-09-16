@@ -1,0 +1,9 @@
+{"amountEur":100,"id":"2026-09-16/dca/dep/1","portfolio":"dca","ts":"2026-09-16T09:30:00.000Z","type":"DEPOSIT"}
+{"decisionId":"2026-09-16/dca/dec","id":"2026-09-16/dca/ord/1","portfolio":"dca","reason":"Buy and hold a single global equity ETF. This control expresses no view: it is the passive baseline every agent is scored against.","side":"buy","targetEur":100,"ticker":"IWDA.AS","ts":"2026-09-16T21:00:00.000Z","type":"ORDER_PLACED"}
+{"cashEur":100,"contributedToDateEur":100,"fxEffectEur":0,"id":"2026-09-16/dca/val/1","marketValueEur":0,"portfolio":"dca","positions":[],"ts":"2026-09-16T22:00:00.000Z","type":"VALUATION"}
+{"amountEur":100,"id":"2026-09-16/random/dep/1","portfolio":"random","ts":"2026-09-16T09:30:00.000Z","type":"DEPOSIT"}
+{"decisionId":"2026-09-16/random/dec","id":"2026-09-16/random/ord/1","portfolio":"random","reason":"No thesis. This control exists to measure how much of an agent's result survives comparison with an arbitrary long position carrying identical fees.","side":"buy","targetEur":100,"ticker":"EBS.VI","ts":"2026-09-16T21:00:00.000Z","type":"ORDER_PLACED"}
+{"cashEur":100,"contributedToDateEur":100,"fxEffectEur":0,"id":"2026-09-16/random/val/1","marketValueEur":0,"portfolio":"random","positions":[],"ts":"2026-09-16T22:00:00.000Z","type":"VALUATION"}
+{"amountEur":100,"id":"2026-09-16/value/dep/1","portfolio":"value","ts":"2026-09-16T09:30:00.000Z","type":"DEPOSIT"}
+{"decisionId":"2026-09-16/value/dec","id":"2026-09-16/value/hld/1","portfolio":"value","reason":"agent_error: ANTHROPIC_API_KEY is not set, so no agent can run. Set it as a repo secret (SPEC 13); it is never logged and never committed.. No order was placed.","ts":"2026-09-16T21:00:00.000Z","type":"HOLD"}
+{"cashEur":100,"contributedToDateEur":100,"fxEffectEur":0,"id":"2026-09-16/value/val/1","marketValueEur":0,"portfolio":"value","positions":[],"ts":"2026-09-16T22:00:00.000Z","type":"VALUATION"}
