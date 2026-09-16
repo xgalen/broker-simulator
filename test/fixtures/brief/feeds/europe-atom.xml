@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Europe Desk</title>
+  <link rel="self" href="https://europe.example.test/feed.atom"/>
+  <updated>2026-09-15T19:00:00Z</updated>
+  <entry>
+    <title><![CDATA[ASML&#39;s order book swells as EUV demand returns]]></title>
+    <link rel="self" href="https://europe.example.test/feed.atom#asml"/>
+    <link rel="alternate" href="https://europe.example.test/2026/09/15/asml-order-book"/>
+    <id>eu-2001</id>
+    <published>2026-09-15T16:20:00Z</published>
+    <updated>2026-09-15T16:40:00Z</updated>
+  </entry>
+  <entry>
+    <title>ECB holds rates steady, signals patience on inflation</title>
+    <link href="https://europe.example.test/2026/09/15/ecb-holds"/>
+    <id>eu-2002</id>
+    <published>2026-09-15T11:05:00Z</published>
+  </entry>
+  <entry>
+    <title>Wall Street closes higher as chip stocks rally</title>
+    <link href="https://europe.example.test/2026/09/15/wall-street-syndicated"/>
+    <id>eu-2003</id>
+    <published>2026-09-15T20:25:00Z</published>
+  </entry>
+  <entry>
+    <title>A fortnight-old story, well outside the window</title>
+    <link href="https://europe.example.test/2026/09/01/old-news"/>
+    <id>eu-2004</id>
+    <published>2026-09-01T07:00:00Z</published>
+  </entry>
+</feed>

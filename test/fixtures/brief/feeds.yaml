@@ -1,0 +1,26 @@
+# Feed config for the brief tests. `dead-feed` has no recorded document, which
+# is how the per-feed degradation path gets exercised.
+schemaVersion: 1
+defaults:
+  maxItemsPerFeed: 10
+  timeoutMs: 5000
+window:
+  maxAgeHours: 48
+  maxHeadlines: 10
+feeds:
+  - { id: markets-rss, name: Markets Wire,   url: https://example.test/markets.xml, region: US,     category: markets,  enabled: true }
+  - { id: europe-atom, name: Europe Desk,    url: https://example.test/europe.atom, region: EU,     category: markets,  enabled: true }
+  - { id: dead-feed,   name: Retired Feed,   url: https://example.test/gone.xml,    region: GLOBAL, category: macro,    enabled: true }
+  - { id: disabled,    name: Disabled Feed,  url: https://example.test/off.xml,     region: GLOBAL, category: macro,    enabled: false }
+yahoo:
+  maxItemsPerQuery: 5
+  queries:
+    - stock market
+tagging:
+  minAliasLength: 4
+  stopAliases: [holding, world, core]
+  aliases:
+    SAP.DE: [SAP, "SAP SE"]
+    ASML.AS: [ASML]
+    AAPL: [Apple]
+    MSFT: [Microsoft]

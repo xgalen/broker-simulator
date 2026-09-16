@@ -10,6 +10,8 @@
  * is exercised without unplugging anything.
  */
 import type { Ticker } from "../domain/types.js";
+import type { FeedSource } from "./feeds.js";
+import { parseFeed, type FeedFetchResult, type FeedReaderPort } from "./rss.js";
 import {
   MarketDataError,
   type BarsQuery,
@@ -101,5 +103,29 @@ export class FixtureMarketData implements MarketDataPort {
     this.record(`getUpcomingEarnings(${tickers.length},${withinDays})`);
     const wanted = new Set(tickers);
     return (this.data.earnings ?? []).filter((e) => wanted.has(e.ticker));
+  }
+}
+
+/**
+ * `FeedReaderPort` over recorded feed documents, keyed by feed id.
+ *
+ * A feed with no fixture comes back as a failure rather than as silence, which
+ * is what the live reader does with a 404 — the brief thins and says so.
+ */
+export class FixtureFeedReader implements FeedReaderPort {
+  readonly calls: string[] = [];
+
+  constructor(private readonly documents: Readonly<Record<string, string>>) {}
+
+  async read(feeds: readonly FeedSource[]): Promise<readonly FeedFetchResult[]> {
+    return feeds.map((feed) => {
+      this.calls.push(feed.id);
+      const xml = this.documents[feed.id];
+      if (xml === undefined) {
+        return { feedId: feed.id, items: [], dropped: 0, error: `no fixture for feed "${feed.id}"` };
+      }
+      const parsed = parseFeed(feed.id, xml);
+      return { feedId: feed.id, items: parsed.items, dropped: parsed.dropped, error: null };
+    });
   }
 }

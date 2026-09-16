@@ -1,0 +1,202 @@
+# News sources for the daily brief (SPEC 6).
+#
+# The brief quotes headlines "from config/feeds.yaml (RSS plus yahoo-finance2's
+# search/news module), deduplicated, each with source, timestamp, URL and
+# instrument tags where resolvable". Everything that decides which stories the
+# agents see lives here, so the identical-information baseline (SPEC 1.4) is a
+# committed, diffable file rather than a constant buried in code.
+#
+# EXPANSION: add feeds, never renumber. Consumers key off `id`, which also ends
+# up in the `source` field of every headline in the brief and therefore in the
+# archived decision records. Changing an `id` rewrites what past decisions look
+# like they read; add a new feed and disable the old one instead.
+#
+# UNVALIDATED: these URLs have not been fetched — the environment this file was
+# written in has no egress. Every one is a documented, long-lived endpoint, but
+# publishers retire RSS without notice (Reuters did). A feed that 404s costs its
+# own headlines and nothing else: the reader degrades per feed and the brief is
+# still built. Check `feedHealth` in the first live brief and disable what is
+# dead rather than leaving the run to rediscover it daily.
+schemaVersion: 1
+
+defaults:
+  # Per feed, after sorting newest first. A feed that dumps 200 items does not
+  # get to crowd out the other nine.
+  maxItemsPerFeed: 30
+  timeoutMs: 10000
+
+window:
+  # Anything older than this at brief time is dropped. Two days covers a Monday
+  # brief reaching back over a weekend without dragging in last week.
+  maxAgeHours: 48
+  # Hard cap on the headline section after dedup. The brief is a prompt input;
+  # 120 headlines is already more than an agent will read carefully.
+  maxHeadlines: 120
+
+feeds:
+  # --- Global markets -------------------------------------------------------
+  - id: yahoo-finance
+    name: Yahoo Finance
+    url: https://finance.yahoo.com/news/rssindex
+    region: GLOBAL
+    category: markets
+    enabled: true
+
+  - id: cnbc-markets
+    name: CNBC Markets
+    url: https://www.cnbc.com/id/20910258/device/rss/rss.html
+    region: US
+    category: markets
+    enabled: true
+
+  - id: cnbc-earnings
+    name: CNBC Earnings
+    url: https://www.cnbc.com/id/15839135/device/rss/rss.html
+    region: US
+    category: companies
+    enabled: true
+
+  - id: marketwatch-top
+    name: MarketWatch Top Stories
+    url: https://feeds.content.dowjones.io/public/rss/mw_topstories
+    region: US
+    category: markets
+    enabled: true
+
+  - id: nasdaq-markets
+    name: Nasdaq Markets
+    url: https://www.nasdaq.com/feed/rssoutbound?category=Markets
+    region: US
+    category: markets
+    enabled: true
+
+  - id: seekingalpha-currents
+    name: Seeking Alpha Market Currents
+    url: https://seekingalpha.com/market_currents.xml
+    region: US
+    category: markets
+    enabled: true
+
+  # --- Europe ---------------------------------------------------------------
+  - id: ft-home
+    name: Financial Times
+    url: https://www.ft.com/rss/home
+    region: EU
+    category: markets
+    enabled: true
+
+  - id: handelsblatt-finanzen
+    name: Handelsblatt Finanzen
+    url: https://www.handelsblatt.com/contentexport/feed/finanzen
+    region: EU
+    category: markets
+    enabled: true
+
+  # --- Macro and policy -----------------------------------------------------
+  # SPEC 5: the `macro` mandate is top-down — rates, inflation, energy,
+  # currency. Central-bank primary sources beat someone's summary of them.
+  - id: ecb-press
+    name: ECB Press
+    url: https://www.ecb.europa.eu/rss/press.html
+    region: EU
+    category: macro
+    enabled: true
+
+  - id: fed-press
+    name: Federal Reserve Press
+    url: https://www.federalreserve.gov/feeds/press_all.xml
+    region: US
+    category: macro
+    enabled: true
+
+# `yahoo-finance2`'s search/news module, as SPEC 6 asks for. Queries rather
+# than per-ticker calls on purpose: news for all ~150 whitelisted names would be
+# 150 extra requests a day against an unofficial endpoint, to fetch stories the
+# feeds above already carry. Agents can still call `getNewsForTicker` on the
+# handful of names they actually care about (SPEC 7).
+yahoo:
+  maxItemsPerQuery: 10
+  queries:
+    - stock market
+    - earnings
+    - ECB interest rates
+    - Federal Reserve
+    - euro dollar exchange rate
+    - oil prices
+
+# Instrument tagging (SPEC 6: "instrument tags where resolvable").
+#
+# Two sources of tags, both filtered against the whitelist: the `relatedTickers`
+# Yahoo attaches to its own items, and an alias match on the headline text.
+# Aliases come from `universe.yaml` names, plus the overrides below.
+tagging:
+  # Name-derived aliases shorter than this never match on their own — "GE" and
+  # "V" would otherwise tag half the feed. Aliases listed explicitly below are
+  # exempt, because a human wrote them down knowing what they match.
+  minAliasLength: 4
+
+  # Dropped from the derived alias set: a word that is a company name and also
+  # an ordinary market word tags everything.
+  stopAliases:
+    - group
+    - holding
+    - holdings
+    - company
+    - companies
+    - bank
+    - energy
+    - total
+    - international
+    - technologies
+    - communications
+    - platforms
+    - wholesale
+    - property
+    - core
+    - global
+    - world
+    - market
+    - markets
+
+  # Short or otherwise unguessable names, written out. The key is the ticker as
+  # it appears in `universe.yaml`; matching is case-insensitive and on word
+  # boundaries, so "SAP" does not fire inside "asap".
+  aliases:
+    SAP.DE: [SAP, "SAP SE"]
+    BMW.DE: [BMW]
+    RWE.DE: [RWE]
+    DTE.DE: [Deutsche Telekom, Telekom]
+    VOW3.DE: [Volkswagen, VW]
+    MBG.DE: [Mercedes-Benz, Mercedes, Daimler]
+    MUV2.DE: [Munich Re, Munich Reinsurance, "Münchener Rück", Muenchener Rueck]
+    DHL.DE: [DHL, Deutsche Post]
+    HEN3.DE: [Henkel]
+    ADS.DE: [Adidas]
+    IFX.DE: [Infineon]
+    ALV.DE: [Allianz]
+    BAS.DE: [BASF]
+    BAYN.DE: [Bayer]
+    SIE.DE: [Siemens]
+    ASML.AS: [ASML]
+    IBM: [IBM, "International Business Machines"]
+    MMM: ["3M"]
+    GE: [GE Aerospace, General Electric]
+    "BRK-B": [Berkshire Hathaway, Berkshire]
+    V: [Visa]
+    T: ["AT&T"]
+    MA: [Mastercard]
+    DE: [Deere, John Deere]
+    KO: [Coca-Cola]
+    PG: [Procter & Gamble]
+    JPM: [JPMorgan, "JP Morgan"]
+    GS: [Goldman Sachs]
+    UNH: [UnitedHealth]
+    LLY: [Eli Lilly]
+    XOM: [Exxon, ExxonMobil]
+    AMD: [AMD, Advanced Micro Devices]
+    NVDA: [Nvidia]
+    GOOGL: [Alphabet, Google]
+    META: [Meta, Facebook]
+    AMZN: [Amazon]
+    MSFT: [Microsoft]
+    AAPL: [Apple]

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Markets Wire</title>
+    <link>https://example.test/</link>
+    <item>
+      <title>Wall Street closes higher as chip stocks rally</title>
+      <link>https://markets.example.test/2026/09/15/wall-street-chips</link>
+      <guid isPermaLink="false">mw-1001</guid>
+      <pubDate>Tue, 15 Sep 2026 20:10:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Apple unveils new iPhone lineup ahead of the holiday quarter</title>
+      <link>https://markets.example.test/2026/09/15/apple-iphone?utm_source=rss&amp;utm_medium=feed</link>
+      <guid isPermaLink="false">mw-1002</guid>
+      <pubDate>Tue, 15 Sep 2026 17:45:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Apple unveils new iPhone lineup ahead of the holiday quarter (updated)</title>
+      <link>https://www.markets.example.test/2026/09/15/apple-iphone/?utm_source=newsletter</link>
+      <guid isPermaLink="false">mw-1003</guid>
+      <pubDate>Tue, 15 Sep 2026 18:02:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Microsoft and SAP expand their cloud partnership</title>
+      <link>https://markets.example.test/2026/09/15/microsoft-sap-cloud</link>
+      <guid isPermaLink="false">mw-1004</guid>
+      <pubDate>Tue, 15 Sep 2026 12:30:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Regulators want a decision ASAP, say lawyers</title>
+      <link>https://markets.example.test/2026/09/15/regulators-asap</link>
+      <guid isPermaLink="false">mw-1005</guid>
+      <pubDate>Tue, 15 Sep 2026 08:15:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Undated wire copy that should never reach a brief</title>
+      <link>https://markets.example.test/2026/09/15/undated</link>
+      <guid isPermaLink="false">mw-1006</guid>
+    </item>
+  </channel>
+</rss>

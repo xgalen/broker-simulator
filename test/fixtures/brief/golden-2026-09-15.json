@@ -1,0 +1,338 @@
+{
+  "briefHash": "sha256:e42deff405c81f6e5c9e797163403dfb5183aab1c300fb06123db596276e62aa",
+  "date": "2026-09-15",
+  "earnings": [
+    {
+      "confirmed": true,
+      "date": "2026-09-17",
+      "ticker": "SAP.DE"
+    },
+    {
+      "confirmed": false,
+      "date": "2026-09-21",
+      "ticker": "AAPL"
+    }
+  ],
+  "fx": [
+    {
+      "asOf": "2026-09-15T20:30:00.000Z",
+      "base": "EUR",
+      "pair": "EURUSD=X",
+      "quote": "USD",
+      "rate": 1.0856
+    }
+  ],
+  "gaps": {
+    "missing": [],
+    "stale": []
+  },
+  "generatedAt": "2026-09-15T20:30:00.000Z",
+  "headlines": [
+    {
+      "duplicates": 2,
+      "id": "yahoo:stock market:yh-1",
+      "publishedAt": "2026-09-15T20:05:00.000Z",
+      "source": "yahoo:stock market",
+      "tickers": [
+        "AAPL",
+        "MSFT"
+      ],
+      "title": "Wall Street closes higher as chip stocks rally",
+      "url": "https://finance.yahoo.com/news/wall-street-chips-rally.html"
+    },
+    {
+      "duplicates": 1,
+      "id": "markets-rss:mw-1002",
+      "publishedAt": "2026-09-15T17:45:00.000Z",
+      "source": "markets-rss",
+      "tickers": [
+        "AAPL"
+      ],
+      "title": "Apple unveils new iPhone lineup ahead of the holiday quarter",
+      "url": "https://markets.example.test/2026/09/15/apple-iphone?utm_source=rss&utm_medium=feed"
+    },
+    {
+      "duplicates": 0,
+      "id": "europe-atom:eu-2001",
+      "publishedAt": "2026-09-15T16:20:00.000Z",
+      "source": "europe-atom",
+      "tickers": [
+        "ASML.AS"
+      ],
+      "title": "ASML's order book swells as EUV demand returns",
+      "url": "https://europe.example.test/2026/09/15/asml-order-book"
+    },
+    {
+      "duplicates": 0,
+      "id": "markets-rss:mw-1004",
+      "publishedAt": "2026-09-15T12:30:00.000Z",
+      "source": "markets-rss",
+      "tickers": [
+        "MSFT",
+        "SAP.DE"
+      ],
+      "title": "Microsoft and SAP expand their cloud partnership",
+      "url": "https://markets.example.test/2026/09/15/microsoft-sap-cloud"
+    },
+    {
+      "duplicates": 0,
+      "id": "europe-atom:eu-2002",
+      "publishedAt": "2026-09-15T11:05:00.000Z",
+      "source": "europe-atom",
+      "tickers": [],
+      "title": "ECB holds rates steady, signals patience on inflation",
+      "url": "https://europe.example.test/2026/09/15/ecb-holds"
+    },
+    {
+      "duplicates": 0,
+      "id": "yahoo:stock market:yh-2",
+      "publishedAt": "2026-09-15T09:12:00.000Z",
+      "source": "yahoo:stock market",
+      "tickers": [
+        "ASML.AS"
+      ],
+      "title": "ASML lifts full-year guidance on EUV demand",
+      "url": "https://finance.yahoo.com/news/asml-lifts-guidance.html?utm_source=yahoo"
+    },
+    {
+      "duplicates": 0,
+      "id": "markets-rss:mw-1005",
+      "publishedAt": "2026-09-15T08:15:00.000Z",
+      "source": "markets-rss",
+      "tickers": [],
+      "title": "Regulators want a decision ASAP, say lawyers",
+      "url": "https://markets.example.test/2026/09/15/regulators-asap"
+    }
+  ],
+  "instruments": {
+    "AAPL": {
+      "asOf": "2026-09-15T20:30:00.000Z",
+      "close": 196.3,
+      "currency": "USD",
+      "exposure": null,
+      "high": 197.4778,
+      "low": 195.1222,
+      "market": "XNAS",
+      "name": "Apple",
+      "open": 195.8289,
+      "previousClose": 197.4073,
+      "region": "US",
+      "returns": {
+        "d1": -0.005609,
+        "d5": 0.011568,
+        "m1": 0.042522,
+        "m6": 0.122804,
+        "y1": 0.155729
+      },
+      "sector": "technology",
+      "sessionDate": "2026-09-15",
+      "ticker": "AAPL",
+      "type": "equity",
+      "volume": 1327106
+    },
+    "ASML.AS": {
+      "asOf": "2026-09-15T20:30:00.000Z",
+      "close": 742.1,
+      "currency": "EUR",
+      "exposure": null,
+      "high": 746.5526,
+      "low": 737.6474,
+      "market": "XAMS",
+      "name": "ASML Holding",
+      "open": 740.319,
+      "previousClose": 749.7359,
+      "region": "EU",
+      "returns": {
+        "d1": -0.010185,
+        "d5": -0.014439,
+        "m1": 0.022345,
+        "m6": 0.034707,
+        "y1": 0.082591
+      },
+      "sector": "technology",
+      "sessionDate": "2026-09-15",
+      "ticker": "ASML.AS",
+      "type": "equity",
+      "volume": 1092059
+    },
+    "IWDA.AS": {
+      "asOf": "2026-09-15T20:30:00.000Z",
+      "close": 97.2,
+      "currency": "EUR",
+      "exposure": "equity_world",
+      "high": 97.7832,
+      "low": 96.6168,
+      "market": "XAMS",
+      "name": "iShares Core MSCI World UCITS",
+      "open": 96.9667,
+      "previousClose": 96.6665,
+      "region": "GLOBAL",
+      "returns": {
+        "d1": 0.005519,
+        "d5": 0.002148,
+        "m1": 0.067713,
+        "m6": 0.089428,
+        "y1": 0.078148
+      },
+      "sector": null,
+      "sessionDate": "2026-09-15",
+      "ticker": "IWDA.AS",
+      "type": "etf",
+      "volume": 1368952
+    },
+    "MSFT": {
+      "asOf": "2026-09-15T20:30:00.000Z",
+      "close": 418.55,
+      "currency": "USD",
+      "exposure": null,
+      "high": 421.0613,
+      "low": 416.0387,
+      "market": "XNAS",
+      "name": "Microsoft",
+      "open": 417.5455,
+      "previousClose": 414.5223,
+      "region": "US",
+      "returns": {
+        "d1": 0.009716,
+        "d5": 0.026293,
+        "m1": 0.088487,
+        "m6": 0.178964,
+        "y1": 0.202997
+      },
+      "sector": "technology",
+      "sessionDate": "2026-09-15",
+      "ticker": "MSFT",
+      "type": "equity",
+      "volume": 1359237
+    },
+    "SAP.DE": {
+      "asOf": "2026-09-15T20:30:00.000Z",
+      "close": 145.8,
+      "currency": "EUR",
+      "exposure": null,
+      "high": 146.6748,
+      "low": 144.9252,
+      "market": "XETR",
+      "name": "SAP SE",
+      "open": 145.4501,
+      "previousClose": 145.8231,
+      "region": "EU",
+      "returns": {
+        "d1": -0.000158,
+        "d5": -0.004652,
+        "m1": -0.059536,
+        "m6": -0.032316,
+        "y1": -0.000781
+      },
+      "sector": "technology",
+      "sessionDate": "2026-09-15",
+      "ticker": "SAP.DE",
+      "type": "equity",
+      "volume": 1458767
+    },
+    "VWCE.DE": {
+      "asOf": "2026-09-15T20:30:00.000Z",
+      "close": 124.65,
+      "currency": "EUR",
+      "exposure": "equity_world",
+      "high": 125.3979,
+      "low": 123.9021,
+      "market": "XETR",
+      "name": "Vanguard FTSE All-World Acc",
+      "open": 124.3508,
+      "previousClose": 123.5897,
+      "region": "GLOBAL",
+      "returns": {
+        "d1": 0.008579,
+        "d5": -0.001532,
+        "m1": 0.040802,
+        "m6": 0.056415,
+        "y1": 0.075245
+      },
+      "sector": null,
+      "sessionDate": "2026-09-15",
+      "ticker": "VWCE.DE",
+      "type": "etf",
+      "volume": 1045365
+    }
+  },
+  "references": [
+    {
+      "asOf": "2026-09-15T20:30:00.000Z",
+      "changePct": 0.002728,
+      "kind": "index",
+      "level": 19240.55,
+      "name": "DAX",
+      "previousClose": 19188.2,
+      "sessionDate": "2026-09-15",
+      "ticker": "^GDAXI"
+    },
+    {
+      "asOf": "2026-09-15T20:30:00.000Z",
+      "changePct": 0.002466,
+      "kind": "index",
+      "level": 5812.4,
+      "name": "S&P 500",
+      "previousClose": 5798.1,
+      "sessionDate": "2026-09-15",
+      "ticker": "^GSPC"
+    },
+    {
+      "asOf": "2026-09-15T20:30:00.000Z",
+      "changePct": -0.002358,
+      "kind": "index",
+      "level": 528.9,
+      "name": "STOXX Europe 600",
+      "previousClose": 530.15,
+      "sessionDate": "2026-09-15",
+      "ticker": "^STOXX"
+    },
+    {
+      "asOf": "2026-09-15T20:30:00.000Z",
+      "changePct": -0.00698,
+      "kind": "yield",
+      "level": 4.126,
+      "name": "US 10y yield",
+      "previousClose": 4.155,
+      "sessionDate": "2026-09-15",
+      "ticker": "^TNX"
+    },
+    {
+      "asOf": "2026-09-15T20:30:00.000Z",
+      "changePct": -0.041045,
+      "kind": "index",
+      "level": 15.42,
+      "name": "CBOE Volatility",
+      "previousClose": 16.08,
+      "sessionDate": "2026-09-15",
+      "ticker": "^VIX"
+    }
+  ],
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "dropped": 1,
+      "error": null,
+      "items": 5,
+      "source": "markets-rss"
+    },
+    {
+      "dropped": 0,
+      "error": null,
+      "items": 4,
+      "source": "europe-atom"
+    },
+    {
+      "dropped": 0,
+      "error": "no fixture for feed \"dead-feed\"",
+      "items": 0,
+      "source": "dead-feed"
+    },
+    {
+      "dropped": 0,
+      "error": null,
+      "items": 2,
+      "source": "yahoo:stock market"
+    }
+  ]
+}

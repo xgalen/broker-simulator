@@ -19,6 +19,19 @@ const dataFiles = readdirSync(dataDir).filter((f) => f.endsWith(".ts"));
 const domainFiles = readdirSync(domainDir).filter((f) => f.endsWith(".ts"));
 const read = (dir: string, file: string): string => readFileSync(join(dir, file), "utf8");
 
+/**
+ * The modules allowed to reach the network, and the whole list.
+ * `yahooClient.ts` fetches prices, `http.ts` fetches RSS. Everything else in
+ * the data layer takes its transport as a parameter — `MarketDataPort`,
+ * `HttpGet` — which is what lets the brief builder be tested end to end with
+ * nothing plugged in.
+ */
+const NETWORK_MODULES = ["http.ts", "yahooClient.ts"];
+
+/** Prose mentioning fetch is not I/O; code is. Compare code only. */
+const stripComments = (source: string): string =>
+  source.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/\/\/.*$/gm, " ");
+
 describe("data layer boundaries", () => {
   it("confines yahoo-finance2 to a single module", () => {
     const importers = dataFiles.filter((file) =>
@@ -39,10 +52,19 @@ describe("data layer boundaries", () => {
     }
   });
 
-  it("keeps network I/O out of everything but the client", () => {
-    for (const file of dataFiles.filter((f) => f !== "yahooClient.ts")) {
-      expect(read(dataDir, file), `${file} calls fetch directly`).not.toMatch(/\bfetch\s*\(/);
+  it("keeps network I/O out of everything but the two transports", () => {
+    for (const file of dataFiles.filter((f) => !NETWORK_MODULES.includes(f))) {
+      expect(
+        stripComments(read(dataDir, file)),
+        `${file} reaches for the network`,
+      ).not.toMatch(/\bfetch\b|\bXMLHttpRequest\b/);
     }
+  });
+
+  it("keeps the feed reader independent of its transport", () => {
+    // The parser and the reader are the halves the brief depends on; both must
+    // stay usable against recorded XML, so neither may import the transport.
+    expect(read(dataDir, "rss.ts")).not.toMatch(/from\s+["']\.\/http\.js["']/);
   });
 
   it("reads the clock through the injected Clock, never the host", () => {

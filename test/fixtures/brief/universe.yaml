@@ -1,0 +1,28 @@
+# A six-instrument universe for the brief tests. Same schema as the real
+# `config/universe.yaml`, small enough that a golden brief stays reviewable.
+schemaVersion: 1
+currencies: [EUR, USD]
+markets:
+  XETR: { name: Xetra,              country: DE, currency: EUR, timezone: Europe/Berlin }
+  XAMS: { name: Euronext Amsterdam, country: NL, currency: EUR, timezone: Europe/Amsterdam }
+  XNAS: { name: Nasdaq,             country: US, currency: USD, timezone: America/New_York }
+benchmarks:
+  default: { EU: IWDA.AS, US: IWDA.AS, GLOBAL: IWDA.AS }
+  sector:
+    technology: { EU: IWDA.AS, US: IWDA.AS }
+dcaInstrument: IWDA.AS
+instruments:
+  - { ticker: ASML.AS, name: ASML Holding,             market: XAMS, currency: EUR, region: EU,     sector: technology, type: equity }
+  - { ticker: SAP.DE,  name: SAP SE,                   market: XETR, currency: EUR, region: EU,     sector: technology, type: equity }
+  - { ticker: AAPL,    name: Apple,                    market: XNAS, currency: USD, region: US,     sector: technology, type: equity }
+  - { ticker: MSFT,    name: Microsoft,                market: XNAS, currency: USD, region: US,     sector: technology, type: equity }
+  - { ticker: IWDA.AS, name: iShares Core MSCI World UCITS, market: XAMS, currency: EUR, region: GLOBAL, exposure: equity_world, type: etf }
+  - { ticker: VWCE.DE, name: Vanguard FTSE All-World Acc,   market: XETR, currency: EUR, region: GLOBAL, exposure: equity_world, type: etf }
+references:
+  - { ticker: "^GSPC",  name: S&P 500,          kind: index }
+  - { ticker: "^STOXX", name: STOXX Europe 600, kind: index }
+  - { ticker: "^VIX",   name: CBOE Volatility,  kind: index }
+  - { ticker: "^TNX",   name: US 10y yield,     kind: yield }
+  - { ticker: "^GDAXI", name: DAX,              kind: index }
+fx:
+  - { pair: "EURUSD=X", base: EUR, quote: USD }
