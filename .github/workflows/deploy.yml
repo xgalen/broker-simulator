@@ -49,10 +49,9 @@ jobs:
             echo "::notice::web/ does not exist yet (SPEC 12 phase 7); skipping the deploy."
           fi
 
+      # See daily.yml: package.json's `packageManager` pin is the only one.
       - uses: pnpm/action-setup@v4
         if: steps.web.outputs.built == 'true'
-        with:
-          version: 10
 
       - uses: actions/setup-node@v4
         if: steps.web.outputs.built == 'true'

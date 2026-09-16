@@ -50,9 +50,10 @@ jobs:
           persist-credentials: true
           fetch-depth: 0
 
+      # No `version:` here on purpose. package.json pins
+      # `packageManager: pnpm@10.33.0`, and action-setup fails outright when it
+      # is told a version twice — so the lockfile's own pin is the one source.
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - uses: actions/setup-node@v4
         with:
