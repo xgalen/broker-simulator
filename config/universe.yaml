@@ -1,0 +1,233 @@
+# Tradable universe (SPEC 6, SPEC 1.6).
+#
+# An order for a ticker that is not in `instruments` below is rejected by the
+# validator, logged with a reason, and never reaches the ledger. Nothing else
+# in this file is tradable: `references` and `fx` exist so the brief can quote
+# context, and an order against one of them is as invalid as an order against
+# a ticker that is not here at all.
+#
+# Sized at ~150 names on purpose. Fetching 1,100 symbols daily gets the client
+# throttled and buys nothing.
+#
+# EXPANSION: add entries, never renumber or restructure. Consumers key off
+# `ticker`. `schemaVersion` changes only if a field changes meaning, and any
+# such change needs a migration note here.
+schemaVersion: 1
+
+# Currency scope. SPEC 4 defines exactly two: EUR portfolios, USD positions
+# converted at EURUSD=X. Every EU name below is therefore EUR-denominated —
+# no CHF, GBP, DKK, SEK or NOK listings — and every US name is USD. Admitting
+# a third currency means a second FX pair and an FX attribution that SPEC 4
+# does not describe, so it waits for a decision rather than sneaking in.
+currencies: [EUR, USD]
+
+markets:
+  XETR: { name: Xetra,               country: DE, currency: EUR, timezone: Europe/Berlin }
+  XPAR: { name: Euronext Paris,      country: FR, currency: EUR, timezone: Europe/Paris }
+  XAMS: { name: Euronext Amsterdam,  country: NL, currency: EUR, timezone: Europe/Amsterdam }
+  XMAD: { name: Bolsa de Madrid,     country: ES, currency: EUR, timezone: Europe/Madrid }
+  XMIL: { name: Borsa Italiana,      country: IT, currency: EUR, timezone: Europe/Rome }
+  XBRU: { name: Euronext Brussels,   country: BE, currency: EUR, timezone: Europe/Brussels }
+  XLIS: { name: Euronext Lisbon,     country: PT, currency: EUR, timezone: Europe/Lisbon }
+  XWBO: { name: Wiener Borse,        country: AT, currency: EUR, timezone: Europe/Vienna }
+  XHEL: { name: Nasdaq Helsinki,     country: FI, currency: EUR, timezone: Europe/Helsinki }
+  XNAS: { name: Nasdaq,              country: US, currency: USD, timezone: America/New_York }
+  XNYS: { name: NYSE,                country: US, currency: USD, timezone: America/New_York }
+
+# Benchmarks for SPEC 10's excess-return evaluation: a closed position is
+# judged against its region/sector peer over the identical window, never
+# against zero. Keyed (region, sector) so instruments carry no duplication.
+benchmarks:
+  default: { EU: MEUD.PA, US: VUSA.AS, GLOBAL: IWDA.AS }
+  sector:
+    technology:  { EU: MEUD.PA, US: XDWT.DE }
+    financials:  { EU: MEUD.PA, US: VUSA.AS }
+    healthcare:  { EU: MEUD.PA, US: VUSA.AS }
+    energy:      { EU: MEUD.PA, US: VUSA.AS }
+    industrials: { EU: MEUD.PA, US: VUSA.AS }
+    consumer:    { EU: MEUD.PA, US: VUSA.AS }
+    materials:   { EU: MEUD.PA, US: VUSA.AS }
+    utilities:   { EU: MEUD.PA, US: VUSA.AS }
+    telecom:     { EU: MEUD.PA, US: VUSA.AS }
+    realestate:  { EU: IPRP.AS, US: VUSA.AS }
+
+# The ETF the `dca` control buys every month with the whole contribution.
+dcaInstrument: IWDA.AS
+
+instruments:
+  # --- Germany, Xetra (15) --------------------------------------------------
+  - { ticker: SAP.DE,   name: SAP,                     market: XETR, currency: EUR, region: EU, sector: technology,  type: equity }
+  - { ticker: SIE.DE,   name: Siemens,                 market: XETR, currency: EUR, region: EU, sector: industrials, type: equity }
+  - { ticker: ALV.DE,   name: Allianz,                 market: XETR, currency: EUR, region: EU, sector: financials,  type: equity }
+  - { ticker: DTE.DE,   name: Deutsche Telekom,        market: XETR, currency: EUR, region: EU, sector: telecom,     type: equity }
+  - { ticker: MBG.DE,   name: Mercedes-Benz Group,     market: XETR, currency: EUR, region: EU, sector: consumer,    type: equity }
+  - { ticker: BMW.DE,   name: BMW,                     market: XETR, currency: EUR, region: EU, sector: consumer,    type: equity }
+  - { ticker: BAS.DE,   name: BASF,                    market: XETR, currency: EUR, region: EU, sector: materials,   type: equity }
+  - { ticker: BAYN.DE,  name: Bayer,                   market: XETR, currency: EUR, region: EU, sector: healthcare,  type: equity }
+  - { ticker: ADS.DE,   name: Adidas,                  market: XETR, currency: EUR, region: EU, sector: consumer,    type: equity }
+  - { ticker: MUV2.DE,  name: Munich Re,               market: XETR, currency: EUR, region: EU, sector: financials,  type: equity }
+  - { ticker: IFX.DE,   name: Infineon Technologies,   market: XETR, currency: EUR, region: EU, sector: technology,  type: equity }
+  - { ticker: DHL.DE,   name: DHL Group,               market: XETR, currency: EUR, region: EU, sector: industrials, type: equity }
+  - { ticker: RWE.DE,   name: RWE,                     market: XETR, currency: EUR, region: EU, sector: utilities,   type: equity }
+  - { ticker: VOW3.DE,  name: Volkswagen pref,         market: XETR, currency: EUR, region: EU, sector: consumer,    type: equity }
+  - { ticker: HEN3.DE,  name: Henkel pref,             market: XETR, currency: EUR, region: EU, sector: consumer,    type: equity }
+  # --- France, Euronext Paris (15) ------------------------------------------
+  - { ticker: MC.PA,    name: LVMH,                    market: XPAR, currency: EUR, region: EU, sector: consumer,    type: equity }
+  - { ticker: OR.PA,    name: L'Oreal,                 market: XPAR, currency: EUR, region: EU, sector: consumer,    type: equity }
+  - { ticker: TTE.PA,   name: TotalEnergies,           market: XPAR, currency: EUR, region: EU, sector: energy,      type: equity }
+  - { ticker: SAN.PA,   name: Sanofi,                  market: XPAR, currency: EUR, region: EU, sector: healthcare,  type: equity }
+  - { ticker: AIR.PA,   name: Airbus,                  market: XPAR, currency: EUR, region: EU, sector: industrials, type: equity }
+  - { ticker: BNP.PA,   name: BNP Paribas,             market: XPAR, currency: EUR, region: EU, sector: financials,  type: equity }
+  - { ticker: SU.PA,    name: Schneider Electric,      market: XPAR, currency: EUR, region: EU, sector: industrials, type: equity }
+  - { ticker: AI.PA,    name: Air Liquide,             market: XPAR, currency: EUR, region: EU, sector: materials,   type: equity }
+  - { ticker: CS.PA,    name: AXA,                     market: XPAR, currency: EUR, region: EU, sector: financials,  type: equity }
+  - { ticker: DG.PA,    name: Vinci,                   market: XPAR, currency: EUR, region: EU, sector: industrials, type: equity }
+  - { ticker: RMS.PA,   name: Hermes International,    market: XPAR, currency: EUR, region: EU, sector: consumer,    type: equity }
+  - { ticker: EL.PA,    name: EssilorLuxottica,        market: XPAR, currency: EUR, region: EU, sector: healthcare,  type: equity }
+  - { ticker: KER.PA,   name: Kering,                  market: XPAR, currency: EUR, region: EU, sector: consumer,    type: equity }
+  - { ticker: SAF.PA,   name: Safran,                  market: XPAR, currency: EUR, region: EU, sector: industrials, type: equity }
+  - { ticker: ORA.PA,   name: Orange,                  market: XPAR, currency: EUR, region: EU, sector: telecom,     type: equity }
+  # --- Netherlands, Euronext Amsterdam (8) ----------------------------------
+  - { ticker: ASML.AS,  name: ASML Holding,            market: XAMS, currency: EUR, region: EU, sector: technology,  type: equity }
+  - { ticker: INGA.AS,  name: ING Groep,               market: XAMS, currency: EUR, region: EU, sector: financials,  type: equity }
+  - { ticker: AD.AS,    name: Ahold Delhaize,          market: XAMS, currency: EUR, region: EU, sector: consumer,    type: equity }
+  - { ticker: PHIA.AS,  name: Philips,                 market: XAMS, currency: EUR, region: EU, sector: healthcare,  type: equity }
+  - { ticker: HEIA.AS,  name: Heineken,                market: XAMS, currency: EUR, region: EU, sector: consumer,    type: equity }
+  - { ticker: WKL.AS,   name: Wolters Kluwer,          market: XAMS, currency: EUR, region: EU, sector: technology,  type: equity }
+  - { ticker: DSFIR.AS, name: DSM-Firmenich,           market: XAMS, currency: EUR, region: EU, sector: materials,   type: equity }
+  - { ticker: ADYEN.AS, name: Adyen,                   market: XAMS, currency: EUR, region: EU, sector: technology,  type: equity }
+  # --- Spain, Bolsa de Madrid (6) -------------------------------------------
+  - { ticker: ITX.MC,   name: Industria de Diseno Textil, market: XMAD, currency: EUR, region: EU, sector: consumer,   type: equity }
+  - { ticker: SAN.MC,   name: Banco Santander,         market: XMAD, currency: EUR, region: EU, sector: financials,  type: equity }
+  - { ticker: BBVA.MC,  name: BBVA,                    market: XMAD, currency: EUR, region: EU, sector: financials,  type: equity }
+  - { ticker: IBE.MC,   name: Iberdrola,               market: XMAD, currency: EUR, region: EU, sector: utilities,   type: equity }
+  - { ticker: TEF.MC,   name: Telefonica,              market: XMAD, currency: EUR, region: EU, sector: telecom,     type: equity }
+  - { ticker: REP.MC,   name: Repsol,                  market: XMAD, currency: EUR, region: EU, sector: energy,      type: equity }
+  # --- Italy, Borsa Italiana (7) --------------------------------------------
+  - { ticker: ENI.MI,   name: Eni,                     market: XMIL, currency: EUR, region: EU, sector: energy,      type: equity }
+  - { ticker: ISP.MI,   name: Intesa Sanpaolo,         market: XMIL, currency: EUR, region: EU, sector: financials,  type: equity }
+  - { ticker: UCG.MI,   name: UniCredit,               market: XMIL, currency: EUR, region: EU, sector: financials,  type: equity }
+  - { ticker: ENEL.MI,  name: Enel,                    market: XMIL, currency: EUR, region: EU, sector: utilities,   type: equity }
+  - { ticker: G.MI,     name: Generali,                market: XMIL, currency: EUR, region: EU, sector: financials,  type: equity }
+  - { ticker: STLAM.MI, name: Stellantis,              market: XMIL, currency: EUR, region: EU, sector: consumer,    type: equity }
+  - { ticker: RACE.MI,  name: Ferrari,                 market: XMIL, currency: EUR, region: EU, sector: consumer,    type: equity }
+  # --- Belgium, Portugal, Austria, Finland (9) ------------------------------
+  - { ticker: ABI.BR,   name: Anheuser-Busch InBev,    market: XBRU, currency: EUR, region: EU, sector: consumer,    type: equity }
+  - { ticker: KBC.BR,   name: KBC Group,               market: XBRU, currency: EUR, region: EU, sector: financials,  type: equity }
+  - { ticker: UCB.BR,   name: UCB,                     market: XBRU, currency: EUR, region: EU, sector: healthcare,  type: equity }
+  - { ticker: EDP.LS,   name: EDP Energias de Portugal, market: XLIS, currency: EUR, region: EU, sector: utilities,  type: equity }
+  - { ticker: GALP.LS,  name: Galp Energia,            market: XLIS, currency: EUR, region: EU, sector: energy,      type: equity }
+  - { ticker: OMV.VI,   name: OMV,                     market: XWBO, currency: EUR, region: EU, sector: energy,      type: equity }
+  - { ticker: EBS.VI,   name: Erste Group Bank,        market: XWBO, currency: EUR, region: EU, sector: financials,  type: equity }
+  - { ticker: NOKIA.HE, name: Nokia,                   market: XHEL, currency: EUR, region: EU, sector: technology,  type: equity }
+  - { ticker: SAMPO.HE, name: Sampo,                   market: XHEL, currency: EUR, region: EU, sector: financials,  type: equity }
+
+  # --- United States (60) ---------------------------------------------------
+  - { ticker: AAPL,  name: Apple,                   market: XNAS, currency: USD, region: US, sector: technology,  type: equity }
+  - { ticker: MSFT,  name: Microsoft,               market: XNAS, currency: USD, region: US, sector: technology,  type: equity }
+  - { ticker: NVDA,  name: NVIDIA,                  market: XNAS, currency: USD, region: US, sector: technology,  type: equity }
+  - { ticker: AMZN,  name: Amazon.com,              market: XNAS, currency: USD, region: US, sector: consumer,    type: equity }
+  - { ticker: GOOGL, name: Alphabet A,              market: XNAS, currency: USD, region: US, sector: technology,  type: equity }
+  - { ticker: META,  name: Meta Platforms,          market: XNAS, currency: USD, region: US, sector: technology,  type: equity }
+  - { ticker: TSLA,  name: Tesla,                   market: XNAS, currency: USD, region: US, sector: consumer,    type: equity }
+  - { ticker: BRK-B, name: Berkshire Hathaway B,    market: XNYS, currency: USD, region: US, sector: financials,  type: equity }
+  - { ticker: LLY,   name: Eli Lilly,               market: XNYS, currency: USD, region: US, sector: healthcare,  type: equity }
+  - { ticker: AVGO,  name: Broadcom,                market: XNAS, currency: USD, region: US, sector: technology,  type: equity }
+  - { ticker: JPM,   name: JPMorgan Chase,          market: XNYS, currency: USD, region: US, sector: financials,  type: equity }
+  - { ticker: V,     name: Visa,                    market: XNYS, currency: USD, region: US, sector: financials,  type: equity }
+  - { ticker: MA,    name: Mastercard,              market: XNYS, currency: USD, region: US, sector: financials,  type: equity }
+  - { ticker: UNH,   name: UnitedHealth Group,      market: XNYS, currency: USD, region: US, sector: healthcare,  type: equity }
+  - { ticker: XOM,   name: Exxon Mobil,             market: XNYS, currency: USD, region: US, sector: energy,      type: equity }
+  - { ticker: JNJ,   name: Johnson & Johnson,       market: XNYS, currency: USD, region: US, sector: healthcare,  type: equity }
+  - { ticker: PG,    name: Procter & Gamble,        market: XNYS, currency: USD, region: US, sector: consumer,    type: equity }
+  - { ticker: HD,    name: Home Depot,              market: XNYS, currency: USD, region: US, sector: consumer,    type: equity }
+  - { ticker: COST,  name: Costco Wholesale,        market: XNAS, currency: USD, region: US, sector: consumer,    type: equity }
+  - { ticker: ABBV,  name: AbbVie,                  market: XNYS, currency: USD, region: US, sector: healthcare,  type: equity }
+  - { ticker: MRK,   name: Merck,                   market: XNYS, currency: USD, region: US, sector: healthcare,  type: equity }
+  - { ticker: CVX,   name: Chevron,                 market: XNYS, currency: USD, region: US, sector: energy,      type: equity }
+  - { ticker: PEP,   name: PepsiCo,                 market: XNAS, currency: USD, region: US, sector: consumer,    type: equity }
+  - { ticker: KO,    name: Coca-Cola,               market: XNYS, currency: USD, region: US, sector: consumer,    type: equity }
+  - { ticker: ADBE,  name: Adobe,                   market: XNAS, currency: USD, region: US, sector: technology,  type: equity }
+  - { ticker: CRM,   name: Salesforce,              market: XNYS, currency: USD, region: US, sector: technology,  type: equity }
+  - { ticker: AMD,   name: Advanced Micro Devices,  market: XNAS, currency: USD, region: US, sector: technology,  type: equity }
+  - { ticker: NFLX,  name: Netflix,                 market: XNAS, currency: USD, region: US, sector: consumer,    type: equity }
+  - { ticker: TMO,   name: Thermo Fisher Scientific, market: XNYS, currency: USD, region: US, sector: healthcare, type: equity }
+  - { ticker: WMT,   name: Walmart,                 market: XNYS, currency: USD, region: US, sector: consumer,    type: equity }
+  - { ticker: BAC,   name: Bank of America,         market: XNYS, currency: USD, region: US, sector: financials,  type: equity }
+  - { ticker: ACN,   name: Accenture,               market: XNYS, currency: USD, region: US, sector: technology,  type: equity }
+  - { ticker: LIN,   name: Linde,                   market: XNAS, currency: USD, region: US, sector: materials,   type: equity }
+  - { ticker: MCD,   name: McDonald's,              market: XNYS, currency: USD, region: US, sector: consumer,    type: equity }
+  - { ticker: CSCO,  name: Cisco Systems,           market: XNAS, currency: USD, region: US, sector: technology,  type: equity }
+  - { ticker: ABT,   name: Abbott Laboratories,     market: XNYS, currency: USD, region: US, sector: healthcare,  type: equity }
+  - { ticker: DHR,   name: Danaher,                 market: XNYS, currency: USD, region: US, sector: healthcare,  type: equity }
+  - { ticker: INTC,  name: Intel,                   market: XNAS, currency: USD, region: US, sector: technology,  type: equity }
+  - { ticker: TXN,   name: Texas Instruments,       market: XNAS, currency: USD, region: US, sector: technology,  type: equity }
+  - { ticker: VZ,    name: Verizon Communications,  market: XNYS, currency: USD, region: US, sector: telecom,     type: equity }
+  - { ticker: PFE,   name: Pfizer,                  market: XNYS, currency: USD, region: US, sector: healthcare,  type: equity }
+  - { ticker: INTU,  name: Intuit,                  market: XNAS, currency: USD, region: US, sector: technology,  type: equity }
+  - { ticker: QCOM,  name: Qualcomm,                market: XNAS, currency: USD, region: US, sector: technology,  type: equity }
+  - { ticker: NKE,   name: Nike,                    market: XNYS, currency: USD, region: US, sector: consumer,    type: equity }
+  - { ticker: AMGN,  name: Amgen,                   market: XNAS, currency: USD, region: US, sector: healthcare,  type: equity }
+  - { ticker: HON,   name: Honeywell International, market: XNAS, currency: USD, region: US, sector: industrials, type: equity }
+  - { ticker: UNP,   name: Union Pacific,           market: XNYS, currency: USD, region: US, sector: industrials, type: equity }
+  - { ticker: LOW,   name: Lowe's,                  market: XNYS, currency: USD, region: US, sector: consumer,    type: equity }
+  - { ticker: IBM,   name: IBM,                     market: XNYS, currency: USD, region: US, sector: technology,  type: equity }
+  - { ticker: SBUX,  name: Starbucks,               market: XNAS, currency: USD, region: US, sector: consumer,    type: equity }
+  - { ticker: CAT,   name: Caterpillar,             market: XNYS, currency: USD, region: US, sector: industrials, type: equity }
+  - { ticker: GS,    name: Goldman Sachs,           market: XNYS, currency: USD, region: US, sector: financials,  type: equity }
+  - { ticker: BLK,   name: BlackRock,               market: XNYS, currency: USD, region: US, sector: financials,  type: equity }
+  - { ticker: DE,    name: Deere & Company,         market: XNYS, currency: USD, region: US, sector: industrials, type: equity }
+  - { ticker: BKNG,  name: Booking Holdings,        market: XNAS, currency: USD, region: US, sector: consumer,    type: equity }
+  - { ticker: MDT,   name: Medtronic,               market: XNYS, currency: USD, region: US, sector: healthcare,  type: equity }
+  - { ticker: PLD,   name: Prologis,                market: XNYS, currency: USD, region: US, sector: realestate,  type: equity }
+  - { ticker: T,     name: AT&T,                    market: XNYS, currency: USD, region: US, sector: telecom,     type: equity }
+  - { ticker: MMM,   name: 3M,                      market: XNYS, currency: USD, region: US, sector: industrials, type: equity }
+  - { ticker: GE,    name: GE Aerospace,            market: XNYS, currency: USD, region: US, sector: industrials, type: equity }
+
+  # --- UCITS ETFs, EUR-listed (30) ------------------------------------------
+  # The `macro` mandate expresses views mainly through these, and `dca` buys
+  # IWDA.AS exclusively.
+  - { ticker: IWDA.AS, name: iShares Core MSCI World UCITS,        market: XAMS, currency: EUR, region: GLOBAL, exposure: equity_world,     type: etf }
+  - { ticker: EUNL.DE, name: iShares Core MSCI World UCITS (Xetra), market: XETR, currency: EUR, region: GLOBAL, exposure: equity_world,    type: etf }
+  - { ticker: VWCE.DE, name: Vanguard FTSE All-World Acc,          market: XETR, currency: EUR, region: GLOBAL, exposure: equity_world,     type: etf }
+  - { ticker: VWRL.AS, name: Vanguard FTSE All-World Dist,         market: XAMS, currency: EUR, region: GLOBAL, exposure: equity_world,     type: etf }
+  - { ticker: SPPW.DE, name: SPDR MSCI World UCITS,                market: XETR, currency: EUR, region: GLOBAL, exposure: equity_world,     type: etf }
+  - { ticker: XDWD.DE, name: Xtrackers MSCI World UCITS,           market: XETR, currency: EUR, region: GLOBAL, exposure: equity_world,     type: etf }
+  - { ticker: IUSQ.DE, name: iShares MSCI ACWI UCITS,              market: XETR, currency: EUR, region: GLOBAL, exposure: equity_world,     type: etf }
+  - { ticker: IUSN.DE, name: iShares MSCI World Small Cap UCITS,   market: XETR, currency: EUR, region: GLOBAL, exposure: equity_smallcap,  type: etf }
+  - { ticker: ISPA.DE, name: iShares STOXX Global Select Dividend 100, market: XETR, currency: EUR, region: GLOBAL, exposure: equity_dividend, type: etf }
+  - { ticker: VHYL.AS, name: Vanguard FTSE All-World High Dividend, market: XAMS, currency: EUR, region: GLOBAL, exposure: equity_dividend,  type: etf }
+  - { ticker: VUSA.AS, name: Vanguard S&P 500 UCITS,               market: XAMS, currency: EUR, region: US,     exposure: equity_us,        type: etf }
+  - { ticker: SXR8.DE, name: iShares Core S&P 500 UCITS,           market: XETR, currency: EUR, region: US,     exposure: equity_us,        type: etf }
+  - { ticker: SXRV.DE, name: iShares Nasdaq 100 UCITS,             market: XETR, currency: EUR, region: US,     exposure: equity_us_tech,   type: etf }
+  - { ticker: XDWT.DE, name: Xtrackers MSCI World Information Technology, market: XETR, currency: EUR, region: GLOBAL, exposure: equity_tech, type: etf }
+  - { ticker: MEUD.PA, name: Lyxor Core STOXX Europe 600,          market: XPAR, currency: EUR, region: EU,     exposure: equity_europe,    type: etf }
+  - { ticker: EXSA.DE, name: iShares STOXX Europe 600 UCITS,       market: XETR, currency: EUR, region: EU,     exposure: equity_europe,    type: etf }
+  - { ticker: EXW1.DE, name: iShares Core EURO STOXX 50 UCITS,     market: XETR, currency: EUR, region: EU,     exposure: equity_eurozone,  type: etf }
+  - { ticker: EXS1.DE, name: iShares Core DAX UCITS,               market: XETR, currency: EUR, region: EU,     exposure: equity_germany,   type: etf }
+  - { ticker: EMIM.AS, name: iShares Core MSCI EM IMI UCITS,       market: XAMS, currency: EUR, region: GLOBAL, exposure: equity_em,        type: etf }
+  - { ticker: IS3N.DE, name: iShares Core MSCI EM IMI UCITS (Xetra), market: XETR, currency: EUR, region: GLOBAL, exposure: equity_em,      type: etf }
+  - { ticker: VFEM.AS, name: Vanguard FTSE Emerging Markets,       market: XAMS, currency: EUR, region: GLOBAL, exposure: equity_em,        type: etf }
+  - { ticker: IJPA.AS, name: iShares Core MSCI Japan IMI UCITS,    market: XAMS, currency: EUR, region: GLOBAL, exposure: equity_japan,     type: etf }
+  - { ticker: IPRP.AS, name: iShares European Property Yield UCITS, market: XAMS, currency: EUR, region: EU,    exposure: equity_realestate, type: etf }
+  - { ticker: IQQH.DE, name: iShares Global Clean Energy UCITS,    market: XETR, currency: EUR, region: GLOBAL, exposure: equity_thematic,  type: etf }
+  - { ticker: EUNA.DE, name: iShares Core Euro Aggregate Bond,     market: XETR, currency: EUR, region: EU,     exposure: bonds_eur_agg,    type: etf }
+  - { ticker: IBCI.DE, name: iShares Euro Inflation Linked Govt,   market: XETR, currency: EUR, region: EU,     exposure: bonds_eur_linker, type: etf }
+  - { ticker: IBGX.DE, name: iShares Euro Government Bond 3-5yr,   market: XETR, currency: EUR, region: EU,     exposure: bonds_eur_govt,   type: etf }
+  - { ticker: IBGL.DE, name: iShares Euro Government Bond 15-30yr, market: XETR, currency: EUR, region: EU,     exposure: bonds_eur_long,   type: etf }
+  - { ticker: IHYG.DE, name: iShares Euro High Yield Corp Bond,    market: XETR, currency: EUR, region: EU,     exposure: bonds_eur_hy,     type: etf }
+  - { ticker: 4GLD.DE, name: Xetra-Gold,                           market: XETR, currency: EUR, region: GLOBAL, exposure: commodity_gold,   type: etc }
+
+# Context for the brief only. NOT tradable — an order against any of these is
+# rejected exactly like an unknown ticker (SPEC 1.6).
+references:
+  - { ticker: "^GSPC",  name: S&P 500,          kind: index }
+  - { ticker: "^STOXX", name: STOXX Europe 600, kind: index }
+  - { ticker: "^VIX",   name: CBOE Volatility,  kind: index }
+  - { ticker: "^TNX",   name: US 10y yield,     kind: yield }
+  - { ticker: "^GDAXI", name: DAX,              kind: index }
+
+# The one FX pair SPEC 4 defines. Valuation of USD positions uses this rate,
+# and the FX contribution to P&L is tracked separately from the price one.
+fx:
+  - { pair: "EURUSD=X", base: EUR, quote: USD }
