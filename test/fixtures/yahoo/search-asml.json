@@ -1,0 +1,21 @@
+{
+  "news": [
+    {
+      "uuid": "6f1f0b2e-2c3a-4d5e-9a10-7c1f2b3d4e5f",
+      "title": "ASML lifts guidance on EUV demand",
+      "publisher": "Reuters",
+      "link": "https://example.invalid/asml-guidance",
+      "providerPublishTime": "2026-09-15T06:12:00.000Z",
+      "type": "STORY",
+      "relatedTickers": ["ASML.AS", "ASML"]
+    },
+    {
+      "uuid": "1a2b3c4d-5e6f-4071-8293-a4b5c6d7e8f9",
+      "title": "Chip equipment orders steady into year end",
+      "publisher": "Bloomberg",
+      "link": "https://example.invalid/chip-orders",
+      "providerPublishTime": "2026-09-14T17:45:00.000Z",
+      "type": "STORY"
+    }
+  ]
+}

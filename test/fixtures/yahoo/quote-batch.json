@@ -1,0 +1,53 @@
+[
+  {
+    "symbol": "AAPL",
+    "currency": "USD",
+    "exchange": "NMS",
+    "fullExchangeName": "NasdaqGS",
+    "quoteType": "EQUITY",
+    "marketState": "CLOSED",
+    "regularMarketPrice": 241.37,
+    "regularMarketOpen": 238.9,
+    "regularMarketDayHigh": 242.15,
+    "regularMarketDayLow": 238.04,
+    "regularMarketPreviousClose": 239.11,
+    "regularMarketVolume": 44812300,
+    "regularMarketTime": "2026-09-15T20:00:02.000Z"
+  },
+  {
+    "symbol": "SAP.DE",
+    "currency": "EUR",
+    "exchange": "GER",
+    "fullExchangeName": "XETRA",
+    "quoteType": "EQUITY",
+    "marketState": "CLOSED",
+    "regularMarketPrice": 214.5,
+    "regularMarketOpen": 213.2,
+    "regularMarketDayHigh": 215.8,
+    "regularMarketDayLow": 212.6,
+    "regularMarketPreviousClose": 213.05,
+    "regularMarketVolume": 1842900,
+    "regularMarketTime": "2026-09-15T15:35:11.000Z"
+  },
+  {
+    "symbol": "EURUSD=X",
+    "currency": "USD",
+    "exchange": "CCY",
+    "fullExchangeName": "CCY",
+    "quoteType": "CURRENCY",
+    "marketState": "REGULAR",
+    "regularMarketPrice": 1.0842,
+    "regularMarketPreviousClose": 1.0871,
+    "regularMarketTime": "2026-09-15T20:59:00.000Z"
+  },
+  {
+    "symbol": "IWDA.AS",
+    "currency": "EUR",
+    "exchange": "AMS",
+    "fullExchangeName": "Amsterdam",
+    "quoteType": "ETF",
+    "marketState": "CLOSED",
+    "regularMarketPrice": 104.66,
+    "regularMarketTime": "2026-09-15T15:30:00.000Z"
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "summaryDetail": {
+    "currency": "EUR",
+    "marketCap": 249800000000,
+    "trailingPE": 42.17,
+    "forwardPE": 31.05,
+    "dividendYield": 0.0102
+  },
+  "defaultKeyStatistics": { "priceToBook": 4.88, "forwardPE": 31.05, "trailingEps": 5.09 },
+  "financialData": { "returnOnEquity": 0.1184, "debtToEquity": 24.6 }
+}

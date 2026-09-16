@@ -1,0 +1,9 @@
+{
+  "meta": { "currency": "USD", "symbol": "AAPL", "exchangeName": "NMS", "instrumentType": "EQUITY" },
+  "quotes": [
+    { "date": "2026-09-11T20:00:00.000Z", "open": 235.1, "high": 237.4, "low": 234.2, "close": 236.8, "volume": 38210400, "adjclose": 236.8 },
+    { "date": "2026-09-14T20:00:00.000Z", "open": 237.0, "high": 240.1, "low": 236.5, "close": 239.11, "volume": 41022100, "adjclose": 239.11 },
+    { "date": "2026-09-15T20:00:00.000Z", "open": 238.9, "high": 242.15, "low": 238.04, "close": 241.37, "volume": 44812300, "adjclose": 241.37 },
+    { "date": "2026-09-16T20:00:00.000Z", "open": null, "high": null, "low": null, "close": null, "volume": null, "adjclose": null }
+  ]
+}

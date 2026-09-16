@@ -12,6 +12,13 @@
 # EXPANSION: add entries, never renumber or restructure. Consumers key off
 # `ticker`. `schemaVersion` changes only if a field changes meaning, and any
 # such change needs a migration note here.
+#
+# UNVALIDATED: these symbols have not been resolved against Yahoo — the
+# environment they were written in has no egress to it. Every one is plausible
+# and the structure is checked in CI, but whether each symbol resolves is an
+# open question. Run the resolver over `instruments` before the first live run
+# and correct anything that comes back empty; the ETF lines are likeliest to
+# need it, since UCITS share classes list under several symbols.
 schemaVersion: 1
 
 # Currency scope. SPEC 4 defines exactly two: EUR portfolios, USD positions

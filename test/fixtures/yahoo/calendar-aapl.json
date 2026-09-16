@@ -1,0 +1,9 @@
+{
+  "calendarEvents": {
+    "earnings": {
+      "earningsDate": ["2026-09-18T00:00:00.000Z", "2026-11-02T00:00:00.000Z"],
+      "earningsCallDate": ["2026-09-18T00:00:00.000Z"],
+      "isEarningsDateEstimate": false
+    }
+  }
+}
