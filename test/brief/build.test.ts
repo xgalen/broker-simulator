@@ -43,6 +43,9 @@ class FailingBars implements MarketDataPort {
   getDailyBars(_ticker: Ticker, _query: BarsQuery): Promise<readonly DailyBar[]> {
     return Promise.reject(this.failure);
   }
+  getCorporateActions(ticker: Ticker, query: BarsQuery) {
+    return this.inner.getCorporateActions(ticker, query);
+  }
   getFxRate(pair: string) {
     return this.inner.getFxRate(pair);
   }

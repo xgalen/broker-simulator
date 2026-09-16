@@ -15,6 +15,7 @@ import { parseFeed, type FeedFetchResult, type FeedReaderPort } from "./rss.js";
 import {
   MarketDataError,
   type BarsQuery,
+  type CorporateAction,
   type DailyBar,
   type EarningsDate,
   type FxQuote,
@@ -27,6 +28,7 @@ import {
 export interface FixtureData {
   readonly quotes?: readonly PriceSnapshot[];
   readonly bars?: Readonly<Record<Ticker, readonly DailyBar[]>>;
+  readonly corporateActions?: readonly CorporateAction[];
   readonly fx?: Readonly<Record<string, FxQuote>>;
   readonly fundamentals?: Readonly<Record<Ticker, Fundamentals>>;
   readonly news?: Readonly<Record<string, readonly NewsItem[]>>;
@@ -66,6 +68,17 @@ export class FixtureMarketData implements MarketDataPort {
     this.record(`getDailyBars(${ticker})`);
     const bars = this.data.bars?.[ticker] ?? [];
     return bars.filter((b) => b.date >= query.from && b.date <= query.to);
+  }
+
+  async getCorporateActions(
+    ticker: Ticker,
+    query: BarsQuery,
+  ): Promise<readonly CorporateAction[]> {
+    this.record(`getCorporateActions(${ticker})`);
+    return (this.data.corporateActions ?? []).filter(
+      (action) =>
+        action.ticker === ticker && action.date >= query.from && action.date <= query.to,
+    );
   }
 
   async getFxRate(pair: string): Promise<FxQuote> {

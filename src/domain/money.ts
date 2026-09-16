@@ -31,6 +31,24 @@ export function roundTo(value: number, dp: number): number {
   return rounded / factor + 0;
 }
 
+/**
+ * Round *down* to `dp` decimals, with the same relative epsilon as `roundTo`
+ * so a value a hair above a tick boundary is not floored a whole tick away.
+ *
+ * Order sizing uses this rather than `roundTo`: rounding a share count to
+ * nearest can round *up*, and an order that rounds up spends cash the
+ * portfolio does not have.
+ */
+export function floorTo(value: number, dp: number): number {
+  if (!Number.isFinite(value)) {
+    throw new RangeError(`cannot floor non-finite value: ${value}`);
+  }
+  const factor = 10 ** dp;
+  const scaled = value * factor;
+  const epsilon = Math.max(Math.abs(scaled), 1) * 1e-9;
+  return Math.floor(scaled + epsilon) / factor + 0;
+}
+
 /** Round to EUR precision (2dp). */
 export function eur(value: number): number {
   return roundTo(value, EUR_DP);

@@ -1,0 +1,28 @@
+# Feeds for the dry run.
+#
+# Deliberately unreachable: the dry run hands the brief builder a feed reader
+# with no fixtures, so every source comes back as an error. That is the point.
+# SPEC 1.5 is about prices, not headlines — a dead publisher must thin the
+# brief and be recorded in `sources`, never stop the run — and the dry run
+# should be exercising that path rather than pretending news always arrives.
+schemaVersion: 1
+
+defaults:
+  maxItemsPerFeed: 20
+  timeoutMs: 5000
+
+window:
+  maxAgeHours: 48
+  maxHeadlines: 40
+
+feeds:
+  - { id: dry-run-wire, name: Dry-run wire, url: "https://example.invalid/dry-run.xml", region: GLOBAL, category: markets, enabled: true }
+
+yahoo:
+  maxItemsPerQuery: 5
+  queries: []
+
+tagging:
+  minAliasLength: 4
+  stopAliases: []
+  aliases: {}

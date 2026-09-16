@@ -90,6 +90,26 @@ export interface BarsQuery {
   readonly interval?: "1d" | "1wk" | "1mo";
 }
 
+/**
+ * A dividend or a split, as the engine applies it (SPEC 8 step 2).
+ *
+ * One type rather than two because the engine asks one question — "what
+ * happened to this instrument between these dates" — and because a source that
+ * reports both in one response should not be split into two round trips.
+ * `date` is the ex-date: the session on or after which a holder is entitled,
+ * which is the only date the ledger can act on.
+ */
+export interface CorporateAction {
+  readonly ticker: Ticker;
+  readonly date: IsoDate;
+  readonly kind: "dividend" | "split";
+  /** Dividend: cash per share, in `currency`. `null` for a split. */
+  readonly amountLocal: number | null;
+  readonly currency: Currency | null;
+  /** Split: shares after, per share before. A 4-for-1 is 4. `null` otherwise. */
+  readonly ratio: number | null;
+}
+
 // --- The port ---------------------------------------------------------------
 
 /**
@@ -105,6 +125,11 @@ export interface MarketDataPort {
   /** Latest close for many instruments. Batched and rate-limited internally. */
   getQuotes(tickers: readonly Ticker[]): Promise<readonly PriceSnapshot[]>;
   getDailyBars(ticker: Ticker, query: BarsQuery): Promise<readonly DailyBar[]>;
+  /** Dividends and splits with an ex-date inside the window (SPEC 8 step 2). */
+  getCorporateActions(
+    ticker: Ticker,
+    query: BarsQuery,
+  ): Promise<readonly CorporateAction[]>;
   getFxRate(pair: string): Promise<FxQuote>;
   getFundamentals(ticker: Ticker): Promise<Fundamentals>;
   getNewsForTicker(ticker: Ticker): Promise<readonly NewsItem[]>;

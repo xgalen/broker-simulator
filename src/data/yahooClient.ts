@@ -45,9 +45,27 @@ export interface RawChartQuote {
   readonly adjclose?: number | null | undefined;
 }
 
+/** `chart({ events: "div|split" })` with `return: "array"` (v4 shapes). */
+export interface RawChartDividend {
+  readonly date: Date | string | number;
+  readonly amount: number;
+}
+
+export interface RawChartSplit {
+  readonly date: Date | string | number;
+  readonly numerator: number;
+  readonly denominator: number;
+}
+
+export interface RawChartEvents {
+  readonly dividends?: readonly RawChartDividend[] | undefined;
+  readonly splits?: readonly RawChartSplit[] | undefined;
+}
+
 export interface RawChart {
   readonly meta: { readonly currency?: string; readonly symbol?: string; readonly exchangeName?: string };
   readonly quotes: readonly RawChartQuote[];
+  readonly events?: RawChartEvents | undefined;
 }
 
 export interface RawSearchNews {
@@ -95,6 +113,8 @@ export interface ChartQuery {
   readonly period1: string;
   readonly period2: string;
   readonly interval: "1d" | "1wk" | "1mo";
+  /** Yahoo's own filter, e.g. `div|split`. Omitted for a plain price series. */
+  readonly events?: string | undefined;
 }
 
 /** What `src/data` needs from Yahoo, and nothing more. */
@@ -191,6 +211,7 @@ export function createYahooClient(options: YahooClientOptions = {}): YahooClient
             period2: query.period2,
             interval: query.interval,
             return: "array",
+            ...(query.events === undefined ? {} : { events: query.events }),
           },
           { validateResult: false },
         )) as unknown as RawChart;

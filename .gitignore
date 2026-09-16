@@ -1,3 +1,7 @@
 node_modules/
 dist/
 .DS_Store
+
+# Scratch output from `pnpm dry-run`. The simulated ledger is disposable;
+# the committed one lives in data/.
+.dryrun/

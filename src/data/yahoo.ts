@@ -14,6 +14,7 @@ import type { IsoDate, IsoTimestamp, Ticker } from "../domain/types.js";
 import {
   MarketDataError,
   type BarsQuery,
+  type CorporateAction,
   type DailyBar,
   type DataSourceHealth,
   type EarningsDate,
@@ -87,6 +88,51 @@ export function mapChart(raw: RawChart): readonly DailyBar[] {
     });
   }
   return bars;
+}
+
+/**
+ * Yahoo's chart events -> the engine's corporate actions.
+ *
+ * Yahoo reports a split as a numerator/denominator pair; the ledger's SPEC 4
+ * `SPLIT` carries a single `ratio`, shares after per share before, so a 4-for-1
+ * arrives here as 4/1 and leaves as 4. A zero denominator is dropped rather
+ * than divided by: a malformed action must not multiply a position by Infinity.
+ */
+export function mapCorporateActions(
+  ticker: Ticker,
+  raw: RawChart,
+): readonly CorporateAction[] {
+  const currency = raw.meta.currency ?? null;
+  const actions: CorporateAction[] = [];
+
+  for (const dividend of raw.events?.dividends ?? []) {
+    const date = toDate(dividend.date instanceof Date ? dividend.date : new Date(dividend.date));
+    const amount = num(dividend.amount);
+    if (date === null || amount === null || amount <= 0) continue;
+    actions.push({ ticker, date, kind: "dividend", amountLocal: amount, currency, ratio: null });
+  }
+
+  for (const split of raw.events?.splits ?? []) {
+    const date = toDate(split.date instanceof Date ? split.date : new Date(split.date));
+    const numerator = num(split.numerator);
+    const denominator = num(split.denominator);
+    if (date === null || numerator === null || denominator === null) continue;
+    if (numerator <= 0 || denominator <= 0) continue;
+    actions.push({
+      ticker,
+      date,
+      kind: "split",
+      amountLocal: null,
+      currency,
+      ratio: numerator / denominator,
+    });
+  }
+
+  // Sorted so a dividend and a split on the same ex-date always reach the
+  // ledger in the same order, whatever order Yahoo listed them in.
+  return actions.sort((a, b) =>
+    a.date === b.date ? a.kind.localeCompare(b.kind) : a.date < b.date ? -1 : 1,
+  );
 }
 
 export function mapFundamentals(
@@ -207,6 +253,29 @@ export class YahooMarketData implements MarketDataPort {
       });
       return mapChart(raw);
     });
+  }
+
+  /**
+   * Not cached. `getDailyBars` is a point-in-time record and never re-fetched
+   * (SPEC 6), but a corporate action is asked about a window that ends today,
+   * and Yahoo publishes ex-dates with a lag — caching the answer would freeze
+   * in a "no dividend" that was only true when the run first asked.
+   */
+  async getCorporateActions(
+    ticker: Ticker,
+    query: BarsQuery,
+  ): Promise<readonly CorporateAction[]> {
+    const raw = await this.run(() =>
+      this.client.chart(ticker, {
+        period1: query.from,
+        period2: query.to,
+        interval: query.interval ?? "1d",
+        events: "div|split",
+      }),
+    );
+    return mapCorporateActions(ticker, raw).filter(
+      (action) => action.date >= query.from && action.date <= query.to,
+    );
   }
 
   async getFxRate(pair: string): Promise<FxQuote> {

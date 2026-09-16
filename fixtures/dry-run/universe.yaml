@@ -1,0 +1,47 @@
+# A small universe for the dry run.
+#
+# Eight instruments instead of 155, because the dry run exists to exercise the
+# engine — fills, deposits, corporate actions, the FX path — not to prove that
+# a YAML file can hold 155 rows. Every structural feature the real
+# `config/universe.yaml` uses is present: two currencies, two regions, ETFs and
+# equities, a reference that must not be tradable, and the EURUSD=X pair.
+#
+# `dcaInstrument` is a *distributing* world ETF here, unlike the accumulating
+# one the live config names, so that the dividend path in SPEC 8 step 2 is
+# actually reached by a position the `dca` control is guaranteed to hold.
+schemaVersion: 1
+
+currencies: [EUR, USD]
+
+markets:
+  XETR: { name: Xetra,              country: DE, currency: EUR, timezone: Europe/Berlin }
+  XPAR: { name: Euronext Paris,     country: FR, currency: EUR, timezone: Europe/Paris }
+  XAMS: { name: Euronext Amsterdam, country: NL, currency: EUR, timezone: Europe/Amsterdam }
+  XNAS: { name: Nasdaq,             country: US, currency: USD, timezone: America/New_York }
+
+benchmarks:
+  default: { EU: MEUD.PA, US: VUSA.AS, GLOBAL: VWRL.AS }
+  sector:
+    technology: { EU: MEUD.PA, US: VUSA.AS }
+    industrials: { EU: MEUD.PA, US: VUSA.AS }
+
+dcaInstrument: VWRL.AS
+
+instruments:
+  - { ticker: VWRL.AS, name: Vanguard FTSE All-World UCITS ETF Dist, market: XAMS, currency: EUR, region: GLOBAL, type: etf, exposure: world-equity }
+  - { ticker: MEUD.PA, name: Amundi Stoxx Europe 600 UCITS ETF,      market: XPAR, currency: EUR, region: EU,     type: etf, exposure: europe-equity }
+  - { ticker: VUSA.AS, name: Vanguard S&P 500 UCITS ETF,             market: XAMS, currency: EUR, region: US,     type: etf, exposure: us-equity }
+  - { ticker: SAP.DE,  name: SAP,                                    market: XETR, currency: EUR, region: EU,     type: equity, sector: technology }
+  - { ticker: ASML.AS, name: ASML Holding,                           market: XAMS, currency: EUR, region: EU,     type: equity, sector: technology }
+  - { ticker: AAPL,    name: Apple,                                  market: XNAS, currency: USD, region: US,     type: equity, sector: technology }
+  - { ticker: MSFT,    name: Microsoft,                              market: XNAS, currency: USD, region: US,     type: equity, sector: technology }
+  - { ticker: NVDA,    name: NVIDIA,                                 market: XNAS, currency: USD, region: US,     type: equity, sector: technology }
+
+# Context only. An order against a reference is as invalid as an order against
+# a ticker that is not in the file at all, and the dry run's whitelist test
+# depends on that staying true.
+references:
+  - { ticker: "^GSPC", name: S&P 500, kind: index }
+
+fx:
+  - { pair: "EURUSD=X", base: EUR, quote: USD }

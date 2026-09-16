@@ -1,0 +1,35 @@
+# Frictions and run-wide constants (SPEC 8).
+#
+# These numbers are the difference between a simulation and a fantasy. At
+# 50 EUR/month a 1 EUR fee is 2% of the contribution before a single price has
+# moved, which is why fee drag is a first-class number on the dashboard rather
+# than a footnote.
+#
+# Nothing in the learning loop may write to this file (SPEC 10, SPEC 14).
+schemaVersion: 1
+
+# --- SPEC 8, verbatim -------------------------------------------------------
+initialDepositEur: 100.00
+monthlyDepositEur: 50.00
+feePerOrderEur: 1.00
+fxSpreadBps: 25 # applied to EUR<->USD conversion on US trades
+minOrderEur: 5.00
+dividendWithholdingPct: 15
+
+# --- Engine timing ----------------------------------------------------------
+engine:
+  # A decision taken on the close of day T is filled at the open of day T+1
+  # (SPEC 1.1). When the home market gives no usable open — a trading halt, a
+  # missing print — the order stays queued and tries the next session. After
+  # this many sessions it is rejected as `order_expired` rather than sitting in
+  # the queue forever against a thesis nobody holds any more.
+  pendingOrderExpirySessions: 5
+
+  # How old the newest close may be before SPEC 1.5 stops the run. One session
+  # of slack absorbs a weekend; anything beyond it means the fetch is wrong.
+  maxQuoteAgeSessions: 1
+
+# --- Metrics ----------------------------------------------------------------
+metrics:
+  # EUR risk-free rate for the Sharpe ratio (SPEC 9), annual fraction.
+  riskFreeAnnual: 0.025

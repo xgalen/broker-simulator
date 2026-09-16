@@ -1,0 +1,139 @@
+# The portfolios and their rules (SPEC 5, SPEC 8).
+#
+# Seven portfolios: five LLM agents and two deterministic controls. Each is
+# seeded with 100 EUR on day one and receives 50 EUR on the first trading day
+# of every subsequent month. They are independent — they do not share cash and
+# do not see each other.
+#
+# `guardrails` is the rope each portfolio gets. Nothing in the learning loop
+# may change a value in this file (SPEC 10, SPEC 14): learning governs what to
+# trade, not how much rope the agent has.
+schemaVersion: 1
+
+# Applied to every portfolio that does not override the field. SPEC 8's block,
+# verbatim, with `news`'s minHoldDays overridden below.
+defaults:
+  guardrails:
+    maxTradesPerMonth: 4
+    minHoldDays: 3
+    maxPositionPct: 25
+    positionLimitsActiveAboveEur: 250 # below this, concentration is allowed
+    cashFloorEur: 0
+    allowShorting: false
+    allowLeverage: false
+    allowDerivatives: false
+
+portfolios:
+  # --- The deterministic controls (SPEC 5, phase 4) -------------------------
+  #
+  # No LLM, pure code. "+3.2%" is meaningless on its own; the headline number
+  # of this project is each agent's return relative to `dca`, after fees.
+  #
+  # Both controls run a single concentrated position by design, so the 25%
+  # position cap is lifted to 100 for them. Capping `dca` at 25% would turn
+  # the benchmark into a 75%-cash portfolio and make every agent look like a
+  # genius — the control has to actually be the strategy it is named after.
+  - key: dca
+    kind: control
+    enabled: true
+    description: >-
+      Buys a single global equity ETF with the full contribution every month.
+      Never sells.
+    control:
+      type: dca
+      # The instrument is `dcaInstrument` in universe.yaml, so the benchmark
+      # and the control can never drift apart.
+    guardrails:
+      maxTradesPerMonth: 1
+      minHoldDays: 0
+      maxPositionPct: 100
+      positionLimitsActiveAboveEur: 250
+      cashFloorEur: 0
+      allowShorting: false
+      allowLeverage: false
+      allowDerivatives: false
+
+  - key: random
+    kind: control
+    enabled: true
+    description: >-
+      Each month picks uniformly at random from the whitelist and buys.
+      Seeded RNG, seed committed, so it is reproducible.
+    control:
+      type: random
+      # SPEC 5: "Seeded RNG, seed committed, so it is reproducible." The draw
+      # is a pure function of this seed and the contribution month, so it can
+      # be re-derived from the ledger alone — there is no RNG cursor to carry
+      # between runs and nothing to corrupt if a run is retried.
+      seed: "broker-simulator/random/v1"
+    guardrails:
+      maxTradesPerMonth: 1
+      minHoldDays: 0
+      maxPositionPct: 100
+      positionLimitsActiveAboveEur: 250
+      cashFloorEur: 0
+      allowShorting: false
+      allowLeverage: false
+      allowDerivatives: false
+
+  # --- The five LLM agents (SPEC 5, phases 5-6) ----------------------------
+  #
+  # Declared here so the ledger, the dashboard and `verify` know the full cast
+  # from the start. `enabled: false` until their phase lands: an agent that is
+  # declared but not built must not quietly produce empty days in the log.
+  - key: news
+    kind: agent
+    enabled: false
+    mandate: config/mandates/news.md
+    model: claude-sonnet-5
+    learning: enabled
+    description: >-
+      Trades on catalysts: earnings, guidance changes, M&A, regulatory news,
+      product events. Short horizon.
+    guardrails:
+      # SPEC 8: "minHoldDays: 3 # 0 for `news`".
+      minHoldDays: 0
+
+  - key: value
+    kind: agent
+    enabled: false
+    mandate: config/mandates/value.md
+    model: claude-sonnet-5
+    learning: enabled
+    description: >-
+      Trades on fundamentals and valuation multiples. Long horizon, low
+      turnover, tolerates being early.
+
+  - key: contrarian
+    kind: agent
+    enabled: false
+    mandate: config/mandates/contrarian.md
+    model: claude-sonnet-5
+    learning: enabled
+    description: >-
+      Mean reversion. Buys what has been beaten down without fundamental
+      impairment; fades crowded moves.
+
+  - key: macro
+    kind: agent
+    enabled: false
+    mandate: config/mandates/macro.md
+    model: claude-sonnet-5
+    learning: enabled
+    description: >-
+      Top-down: rates, inflation, energy, currency, sector rotation. Expresses
+      views mainly through ETFs.
+
+  # The control for learning itself (SPEC 5). Byte-identical to `news` except
+  # that learning is disabled and it never receives a playbook.
+  - key: news-frozen
+    kind: agent
+    enabled: false
+    mandate: config/mandates/news.md
+    model: claude-sonnet-5
+    learning: frozen
+    description: >-
+      Byte-identical to `news` — same mandate, same prompt, same model —
+      except that learning is disabled and it never receives a playbook.
+    guardrails:
+      minHoldDays: 0

@@ -1,0 +1,94 @@
+# The daily run (SPEC 13).
+#
+# Phase 4 scope: run the two deterministic controls once a session and commit
+# the result. This is the minimal version — SPEC 12 puts workflow hardening in
+# phase 9, and the things deliberately not here yet are listed at the bottom.
+name: daily
+
+on:
+  schedule:
+    # SPEC 13: 22:30 CET, Monday-Friday, after the US close. Cron is UTC, so
+    # this is 21:30 UTC — correct in winter (CET = UTC+1) and an hour early in
+    # summer (CEST = UTC+2). Actions cron has no timezone support; the run is
+    # gated on a *new close* rather than on the clock (SPEC 13), so an early
+    # run on a summer evening finds no new session and writes nothing.
+    - cron: "30 21 * * 1-5"
+  workflow_dispatch:
+
+# SPEC 13: "Concurrency group on the workflow so two runs can never race the
+# ledger." events.jsonl is append-only and has no merge strategy; two jobs
+# appending at once would interleave lines and produce a log that replays to
+# nonsense.
+concurrency:
+  group: ledger
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm build
+
+      # The session. Exits 0 even when it skips: SPEC 1.5 says a stale or
+      # failed fetch logs SKIPPED for every portfolio and exits 0, and a job
+      # that went red on a Yahoo hiccup would train everyone to ignore it.
+      - name: Run the session
+        id: session
+        run: |
+          set -euo pipefail
+          node dist/cli/main.js run-daily | tee /tmp/run.log
+          # The last line is SPEC 13's commit subject, e.g.
+          # `sim: 2026-09-16 (3 trades, 3 holds)`.
+          {
+            echo "message<<EOF"
+            tail -1 /tmp/run.log
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      # Never commit a ledger that does not replay. `verify` asserts every
+      # SPEC 4 invariant plus the look-ahead check; `rebuild-state --check`
+      # asserts state.json is byte-identical to a fresh replay (SPEC 14).
+      - name: Verify the ledger
+        run: |
+          node dist/cli/main.js verify
+          node dist/cli/main.js rebuild-state --check
+
+      - name: Commit the session
+        # Through the environment rather than interpolated into the script, so
+        # the message is data and never shell.
+        env:
+          SESSION_MESSAGE: ${{ steps.session.outputs.message }}
+        run: |
+          set -euo pipefail
+          if [ -z "$(git status --porcelain data)" ]; then
+            echo "no new data; nothing to commit"
+            exit 0
+          fi
+          git config user.name "investor-simulator[bot]"
+          git config user.email "investor-simulator[bot]@users.noreply.github.com"
+          git add data
+          git commit -m "${SESSION_MESSAGE:-sim: $(date -u +%Y-%m-%d)}"
+          git push
+
+# Deferred to phase 9 (SPEC 12 step 9), deliberately not here:
+#   - retry/backoff around the whole job and a failure notification
+#   - a pinned action SHA for each `uses:` above
+#   - the monthly review workflow and the Pages deployment
+#   - secrets (ANTHROPIC_API_KEY, the web-search provider key) — phase 4 runs
+#     no LLM at all, which is the point of building the controls first

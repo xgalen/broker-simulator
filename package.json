@@ -8,6 +8,12 @@
     "node": ">=22"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "sim": "node dist/cli/main.js",
+    "run-daily": "pnpm build && node dist/cli/main.js run-daily",
+    "verify": "pnpm build && node dist/cli/main.js verify",
+    "rebuild-state": "pnpm build && node dist/cli/main.js rebuild-state",
+    "dry-run": "pnpm build && node dist/cli/main.js dry-run",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
