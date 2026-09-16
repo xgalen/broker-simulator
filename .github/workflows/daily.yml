@@ -1,24 +1,36 @@
 # The daily run (SPEC 13).
 #
-# Phase 4 scope: run the two deterministic controls once a session and commit
-# the result. This is the minimal version — SPEC 12 puts workflow hardening in
-# phase 9, and the things deliberately not here yet are listed at the bottom.
+# Scope: the deterministic controls. No agent runs here and no
+# ANTHROPIC_API_KEY is wired in — SPEC 12 phase 4 wants the whole pipeline
+# proven with zero LLM spend before an agent is handed a credential. The test
+# in `test/workflows/workflows.test.ts` fails loudly if a key appears in this
+# file, so adding one is a deliberate act rather than a drive-by edit.
 name: daily
 
 on:
   schedule:
-    # SPEC 13: 22:30 CET, Monday-Friday, after the US close. Cron is UTC, so
-    # this is 21:30 UTC — correct in winter (CET = UTC+1) and an hour early in
-    # summer (CEST = UTC+2). Actions cron has no timezone support; the run is
-    # gated on a *new close* rather than on the clock (SPEC 13), so an early
-    # run on a summer evening finds no new session and writes nothing.
-    - cron: "30 21 * * 1-5"
+    # 20:30 UTC, Monday-Friday.
+    #
+    # Cron in Actions is always UTC and has no timezone support, so this clock
+    # drifts against Europe by an hour twice a year. Right now (CEST, UTC+2)
+    # this is 22:30 local, which is what SPEC 13 asks for. After the October
+    # DST change (CET, UTC+1) the same line runs at 21:30 local — a little
+    # over an hour after the US close rather than two and a half.
+    #
+    # That is tolerable because correctness does not depend on the cron being
+    # exact. SPEC 13 says to handle holidays "by detecting no new close rather
+    # than hardcoding a calendar", and SPEC 1 rule 5 makes a run that finds no
+    # new close write SKIPPED and trade nothing. An early run is therefore a
+    # no-op that costs a minute of Actions time, not a bad fill. The cron is a
+    # scheduling convenience; the no-new-close skip is the correctness
+    # mechanism.
+    - cron: "30 20 * * 1-5"
   workflow_dispatch:
 
 # SPEC 13: "Concurrency group on the workflow so two runs can never race the
 # ledger." events.jsonl is append-only and has no merge strategy; two jobs
-# appending at once would interleave lines and produce a log that replays to
-# nonsense.
+# appending at once would interleave lines into a log that replays to nonsense.
+# Never cancel in progress: a half-written session is worse than a late one.
 concurrency:
   group: ledger
   cancel-in-progress: false
@@ -31,6 +43,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The job pushes the session back to main, so the checkout keeps its
+          # credentials. Full history because the push is a fast-forward onto
+          # whatever main is when the job runs.
+          persist-credentials: true
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
         with:
@@ -45,7 +63,7 @@ jobs:
 
       - run: pnpm build
 
-      # The session. Exits 0 even when it skips: SPEC 1.5 says a stale or
+      # The session. Exits 0 even when it skips: SPEC 1 rule 5 says a stale or
       # failed fetch logs SKIPPED for every portfolio and exits 0, and a job
       # that went red on a Yahoo hiccup would train everyone to ignore it.
       - name: Run the session
@@ -53,12 +71,12 @@ jobs:
         run: |
           set -euo pipefail
           node dist/cli/main.js run-daily | tee /tmp/run.log
-          # The last line is SPEC 13's commit subject, e.g.
+          # The CLI's last line is SPEC 13's commit subject, e.g.
           # `sim: 2026-09-16 (3 trades, 3 holds)`.
           {
-            echo "message<<EOF"
+            echo "message<<SESSION_EOF"
             tail -1 /tmp/run.log
-            echo "EOF"
+            echo "SESSION_EOF"
           } >> "$GITHUB_OUTPUT"
 
       # Never commit a ledger that does not replay. `verify` asserts every
@@ -71,24 +89,27 @@ jobs:
 
       - name: Commit the session
         # Through the environment rather than interpolated into the script, so
-        # the message is data and never shell.
+        # the message is data and can never be shell.
         env:
           SESSION_MESSAGE: ${{ steps.session.outputs.message }}
         run: |
           set -euo pipefail
+          # A session that wrote nothing — a holiday, a stale fetch, a weekday
+          # the market was shut — must not leave an empty commit behind. The
+          # ledger should record sessions that happened, not that the job ran.
           if [ -z "$(git status --porcelain data)" ]; then
             echo "no new data; nothing to commit"
             exit 0
           fi
-          git config user.name "investor-simulator[bot]"
-          git config user.email "investor-simulator[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data
           git commit -m "${SESSION_MESSAGE:-sim: $(date -u +%Y-%m-%d)}"
-          git push
+          git push origin HEAD:main
 
-# Deferred to phase 9 (SPEC 12 step 9), deliberately not here:
-#   - retry/backoff around the whole job and a failure notification
-#   - a pinned action SHA for each `uses:` above
-#   - the monthly review workflow and the Pages deployment
-#   - secrets (ANTHROPIC_API_KEY, the web-search provider key) — phase 4 runs
-#     no LLM at all, which is the point of building the controls first
+# Deferred, deliberately not here:
+#   - ANTHROPIC_API_KEY and the web-search provider key. Phase 5's `value`
+#     agent is enabled in config/portfolios.yaml, so it appears in the roster,
+#     but with no credential it records a HOLD and spends nothing. Wiring the
+#     key is a separate decision with a separate review.
+#   - a pinned SHA for each `uses:` above, and a failure notification.

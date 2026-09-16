@@ -1,0 +1,91 @@
+# GitHub Pages deployment (SPEC 11, SPEC 13).
+#
+# The dashboard is static and built from committed JSON only, so a deploy is
+# "the data changed, rebuild the site". It therefore runs on a push that
+# touches `data/` — which is what the daily run writes — or `web/` itself.
+name: deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "data/**"
+      - "web/**"
+  workflow_dispatch:
+
+# Pages needs to write the deployment and mint an OIDC token for it; the
+# checkout needs to read the repo. Nothing here writes to the repository.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time. A queued run is fine — it will publish the newer
+# data — but two concurrent publishes race over which one wins.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      built: ${{ steps.web.outputs.built }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # `web/` arrives in SPEC 12 phase 7. Until then this workflow is wired
+      # but has nothing to build, and every daily commit would otherwise turn
+      # it red — which is how a repository teaches people to ignore a red X.
+      # Remove this step, and the `if:` guards below, once `web/` exists.
+      - name: Is there a site to build yet?
+        id: web
+        run: |
+          set -euo pipefail
+          if [ -d web ]; then
+            echo "built=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "built=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::web/ does not exist yet (SPEC 12 phase 7); skipping the deploy."
+          fi
+
+      - uses: pnpm/action-setup@v4
+        if: steps.web.outputs.built == 'true'
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        if: steps.web.outputs.built == 'true'
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        if: steps.web.outputs.built == 'true'
+        run: pnpm install --frozen-lockfile
+
+      # SPEC 11: the site must build with the network disabled — it reads the
+      # committed JSON in `data/` and fetches nothing at build time.
+      - name: Build the site
+        if: steps.web.outputs.built == 'true'
+        working-directory: web
+        run: pnpm build
+
+      - uses: actions/configure-pages@v5
+        if: steps.web.outputs.built == 'true'
+
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.web.outputs.built == 'true'
+        with:
+          path: web/dist
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.built == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

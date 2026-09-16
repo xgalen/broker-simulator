@@ -1,0 +1,364 @@
+{
+  "schemaVersion": 1,
+  "name": "live sequence: three sessions across a weekend",
+  "description": "Thursday, Friday and the following Monday, with Saturday deliberately absent. Built to pin three things the live run must get right before it is trusted with a real ledger: the 100 EUR seed lands exactly once and only on the first session, every fill uses the NEXT session's open rather than a price visible when the order was decided (SPEC 1 rule 1), and an order queued on Friday fills at Monday's open because Saturday is not a session. Opens carry a distinct cent value per day so a test can prove which session a fill priced against. Prices are synthetic.",
+  "config": {
+    "universe": "fixtures/dry-run/universe.yaml",
+    "feeds": "fixtures/dry-run/feeds.yaml",
+    "portfolios": "config/portfolios.yaml",
+    "simulation": "config/simulation.yaml"
+  },
+  "sessions": [
+    {
+      "date": "2026-04-30",
+      "at": "2026-04-30T20:30:00.000Z",
+      "note": "Thursday, and the first session ever: the 100 EUR seed lands and both controls deploy it.",
+      "quotes": [
+        {
+          "ticker": "VWRL.AS",
+          "currency": "EUR",
+          "exchange": "Euronext Amsterdam",
+          "open": 117.11,
+          "high": 118.61,
+          "low": 115.61,
+          "close": 117.51,
+          "previousClose": 117.0,
+          "volume": 1000000
+        },
+        {
+          "ticker": "MEUD.PA",
+          "currency": "EUR",
+          "exchange": "Euronext Paris",
+          "open": 264.11,
+          "high": 265.61,
+          "low": 262.61,
+          "close": 264.51,
+          "previousClose": 264.0,
+          "volume": 1000000
+        },
+        {
+          "ticker": "VUSA.AS",
+          "currency": "EUR",
+          "exchange": "Euronext Amsterdam",
+          "open": 106.11,
+          "high": 107.61,
+          "low": 104.61,
+          "close": 106.51,
+          "previousClose": 106.0,
+          "volume": 1000000
+        },
+        {
+          "ticker": "SAP.DE",
+          "currency": "EUR",
+          "exchange": "XETRA",
+          "open": 241.11,
+          "high": 242.61,
+          "low": 239.61,
+          "close": 241.51,
+          "previousClose": 241.0,
+          "volume": 1000000
+        },
+        {
+          "ticker": "ASML.AS",
+          "currency": "EUR",
+          "exchange": "Euronext Amsterdam",
+          "open": 682.11,
+          "high": 683.61,
+          "low": 680.61,
+          "close": 682.51,
+          "previousClose": 682.0,
+          "volume": 1000000
+        },
+        {
+          "ticker": "AAPL",
+          "currency": "USD",
+          "exchange": "NasdaqGS",
+          "open": 238.11,
+          "high": 239.61,
+          "low": 236.61,
+          "close": 238.51,
+          "previousClose": 238.0,
+          "volume": 1000000
+        },
+        {
+          "ticker": "MSFT",
+          "currency": "USD",
+          "exchange": "NasdaqGS",
+          "open": 421.11,
+          "high": 422.61,
+          "low": 419.61,
+          "close": 421.51,
+          "previousClose": 421.0,
+          "volume": 1000000
+        },
+        {
+          "ticker": "NVDA",
+          "currency": "USD",
+          "exchange": "NasdaqGS",
+          "open": 132.11,
+          "high": 133.61,
+          "low": 130.61,
+          "close": 132.51,
+          "previousClose": 132.0,
+          "volume": 1000000
+        },
+        {
+          "ticker": "^GSPC",
+          "currency": "USD",
+          "exchange": "SNP",
+          "open": 5900.11,
+          "high": 5901.61,
+          "low": 5898.61,
+          "close": 5900.51,
+          "previousClose": 5900.0,
+          "volume": 1000000
+        },
+        {
+          "ticker": "EURUSD=X",
+          "currency": "USD",
+          "exchange": "CCY",
+          "open": 1.08,
+          "high": 1.08,
+          "low": 1.08,
+          "close": 1.08,
+          "previousClose": 1.08,
+          "volume": null
+        }
+      ]
+    },
+    {
+      "date": "2026-05-01",
+      "at": "2026-05-01T20:30:00.000Z",
+      "note": "Friday, and the first trading session of May: Thursday's orders fill at this open, and the 50 EUR contribution queues new ones.",
+      "quotes": [
+        {
+          "ticker": "VWRL.AS",
+          "currency": "EUR",
+          "exchange": "Euronext Amsterdam",
+          "open": 118.72,
+          "high": 120.22,
+          "low": 117.22,
+          "close": 119.12,
+          "previousClose": 118.5,
+          "volume": 1000000
+        },
+        {
+          "ticker": "MEUD.PA",
+          "currency": "EUR",
+          "exchange": "Euronext Paris",
+          "open": 265.72,
+          "high": 267.22,
+          "low": 264.22,
+          "close": 266.12,
+          "previousClose": 265.5,
+          "volume": 1000000
+        },
+        {
+          "ticker": "VUSA.AS",
+          "currency": "EUR",
+          "exchange": "Euronext Amsterdam",
+          "open": 107.72,
+          "high": 109.22,
+          "low": 106.22,
+          "close": 108.12,
+          "previousClose": 107.5,
+          "volume": 1000000
+        },
+        {
+          "ticker": "SAP.DE",
+          "currency": "EUR",
+          "exchange": "XETRA",
+          "open": 242.72,
+          "high": 244.22,
+          "low": 241.22,
+          "close": 243.12,
+          "previousClose": 242.5,
+          "volume": 1000000
+        },
+        {
+          "ticker": "ASML.AS",
+          "currency": "EUR",
+          "exchange": "Euronext Amsterdam",
+          "open": 683.72,
+          "high": 685.22,
+          "low": 682.22,
+          "close": 684.12,
+          "previousClose": 683.5,
+          "volume": 1000000
+        },
+        {
+          "ticker": "AAPL",
+          "currency": "USD",
+          "exchange": "NasdaqGS",
+          "open": 239.72,
+          "high": 241.22,
+          "low": 238.22,
+          "close": 240.12,
+          "previousClose": 239.5,
+          "volume": 1000000
+        },
+        {
+          "ticker": "MSFT",
+          "currency": "USD",
+          "exchange": "NasdaqGS",
+          "open": 422.72,
+          "high": 424.22,
+          "low": 421.22,
+          "close": 423.12,
+          "previousClose": 422.5,
+          "volume": 1000000
+        },
+        {
+          "ticker": "NVDA",
+          "currency": "USD",
+          "exchange": "NasdaqGS",
+          "open": 133.72,
+          "high": 135.22,
+          "low": 132.22,
+          "close": 134.12,
+          "previousClose": 133.5,
+          "volume": 1000000
+        },
+        {
+          "ticker": "^GSPC",
+          "currency": "USD",
+          "exchange": "SNP",
+          "open": 5901.72,
+          "high": 5903.22,
+          "low": 5900.22,
+          "close": 5902.12,
+          "previousClose": 5901.5,
+          "volume": 1000000
+        },
+        {
+          "ticker": "EURUSD=X",
+          "currency": "USD",
+          "exchange": "CCY",
+          "open": 1.095,
+          "high": 1.095,
+          "low": 1.095,
+          "close": 1.095,
+          "previousClose": 1.08,
+          "volume": null
+        }
+      ]
+    },
+    {
+      "date": "2026-05-04",
+      "at": "2026-05-04T20:30:00.000Z",
+      "note": "Monday. Saturday 2026-05-02 does not exist in this scenario, so Friday's orders must fill at THIS open.",
+      "quotes": [
+        {
+          "ticker": "VWRL.AS",
+          "currency": "EUR",
+          "exchange": "Euronext Amsterdam",
+          "open": 116.58,
+          "high": 118.08,
+          "low": 115.08,
+          "close": 116.98,
+          "previousClose": 116.25,
+          "volume": 1000000
+        },
+        {
+          "ticker": "MEUD.PA",
+          "currency": "EUR",
+          "exchange": "Euronext Paris",
+          "open": 263.58,
+          "high": 265.08,
+          "low": 262.08,
+          "close": 263.98,
+          "previousClose": 263.25,
+          "volume": 1000000
+        },
+        {
+          "ticker": "VUSA.AS",
+          "currency": "EUR",
+          "exchange": "Euronext Amsterdam",
+          "open": 105.58,
+          "high": 107.08,
+          "low": 104.08,
+          "close": 105.98,
+          "previousClose": 105.25,
+          "volume": 1000000
+        },
+        {
+          "ticker": "SAP.DE",
+          "currency": "EUR",
+          "exchange": "XETRA",
+          "open": 240.58,
+          "high": 242.08,
+          "low": 239.08,
+          "close": 240.98,
+          "previousClose": 240.25,
+          "volume": 1000000
+        },
+        {
+          "ticker": "ASML.AS",
+          "currency": "EUR",
+          "exchange": "Euronext Amsterdam",
+          "open": 681.58,
+          "high": 683.08,
+          "low": 680.08,
+          "close": 681.98,
+          "previousClose": 681.25,
+          "volume": 1000000
+        },
+        {
+          "ticker": "AAPL",
+          "currency": "USD",
+          "exchange": "NasdaqGS",
+          "open": 237.58,
+          "high": 239.08,
+          "low": 236.08,
+          "close": 237.98,
+          "previousClose": 237.25,
+          "volume": 1000000
+        },
+        {
+          "ticker": "MSFT",
+          "currency": "USD",
+          "exchange": "NasdaqGS",
+          "open": 420.58,
+          "high": 422.08,
+          "low": 419.08,
+          "close": 420.98,
+          "previousClose": 420.25,
+          "volume": 1000000
+        },
+        {
+          "ticker": "NVDA",
+          "currency": "USD",
+          "exchange": "NasdaqGS",
+          "open": 131.58,
+          "high": 133.08,
+          "low": 130.08,
+          "close": 131.98,
+          "previousClose": 131.25,
+          "volume": 1000000
+        },
+        {
+          "ticker": "^GSPC",
+          "currency": "USD",
+          "exchange": "SNP",
+          "open": 5899.58,
+          "high": 5901.08,
+          "low": 5898.08,
+          "close": 5899.98,
+          "previousClose": 5899.25,
+          "volume": 1000000
+        },
+        {
+          "ticker": "EURUSD=X",
+          "currency": "USD",
+          "exchange": "CCY",
+          "open": 1.0725,
+          "high": 1.0725,
+          "low": 1.0725,
+          "close": 1.0725,
+          "previousClose": 1.08,
+          "volume": null
+        }
+      ]
+    }
+  ]
+}
