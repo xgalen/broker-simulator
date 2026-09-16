@@ -14,6 +14,7 @@ import { MarketDataError } from "../../src/data/port.js";
 import { MemoryCache } from "../../src/data/cache.js";
 import { recordingSleep } from "../../src/data/resilience.js";
 import { YahooMarketData, mapChart, mapFundamentals, mapNews, mapQuote } from "../../src/data/yahoo.js";
+import { classifyError } from "../../src/data/yahooClient.js";
 import type {
   ChartQuery,
   RawChart,
@@ -267,5 +268,80 @@ describe("YahooMarketData", () => {
     const port = adapter(new FakeClient());
     await port.getQuotes(["AAPL"]);
     expect(port.health).toMatchObject({ state: "closed", consecutiveFailures: 0, requests: 1 });
+  });
+});
+
+/**
+ * The bug that made every live run skip.
+ *
+ * The first real session failed with `No fundamentals data found for symbol:
+ * IWDA.AS`. ETFs have no earnings calendar, Yahoo reports that as a plain
+ * Error, `classifyError` called anything unrecognised `transient`, and
+ * `getUpcomingEarnings` rethrew anything that was not `permanent` — so the
+ * first fund in the universe killed the brief, and with it the session. There
+ * are 30 funds in the universe: this was deterministic, not flaky.
+ */
+describe("one instrument without a calendar cannot end the session", () => {
+  const noData = (ticker: string): Error =>
+    new Error(`No fundamentals data found for symbol: ${ticker}`);
+
+  it("classifies Yahoo's no-data-for-symbol as permanent, not retryable", () => {
+    const classified = classifyError(noData("IWDA.AS"));
+    expect(classified.failure).toBe("permanent");
+    expect(classified.retryable).toBe(false);
+  });
+
+  it("still treats an unrecognised error as transient", () => {
+    expect(classifyError(new Error("socket hang up")).failure).toBe("transient");
+  });
+
+  it("skips the instrument and keeps the rest of the earnings section", async () => {
+    const client = new FakeClient({
+      quoteSummary: (symbol) =>
+        symbol === "IWDA.AS"
+          ? Promise.reject(new MarketDataError(`No fundamentals data found for symbol: ${symbol}`, "permanent"))
+          : Promise.resolve(calendar),
+    });
+    const found = await adapter(client).getUpcomingEarnings(["IWDA.AS", "AAPL"], 7);
+    expect(found.map((entry) => entry.ticker)).toEqual(["AAPL"]);
+  });
+
+  it("skips a transient failure too, rather than losing the session to it", async () => {
+    // Retries are already spent by the time the catch is reached: the choice
+    // left is this instrument or the whole brief.
+    const client = new FakeClient({
+      quoteSummary: (symbol) =>
+        symbol === "BAD"
+          ? Promise.reject(new MarketDataError("socket hang up", "transient"))
+          : Promise.resolve(calendar),
+    });
+    const found = await adapter(client, {
+      retry: { attempts: 1, baseDelayMs: 1, maxDelayMs: 1, jitter: false },
+    }).getUpcomingEarnings(["BAD", "AAPL"], 7);
+    expect(found.map((entry) => entry.ticker)).toEqual(["AAPL"]);
+  });
+
+  it("still fails the session when the upstream itself is down", async () => {
+    // An open circuit is not a fact about one symbol. Carrying on would report
+    // an empty earnings section that means "nothing could be fetched at all".
+    const client = new FakeClient({
+      quoteSummary: () => Promise.reject(new MarketDataError("gateway down", "transient")),
+    });
+    const port = adapter(client, {
+      retry: { attempts: 1, baseDelayMs: 1, maxDelayMs: 1, jitter: false },
+      circuit: { failureThreshold: 1, cooldownMs: 60_000, halfOpenProbes: 1 },
+    });
+    await expect(port.getUpcomingEarnings(["A", "B", "C"], 7)).rejects.toMatchObject({
+      failure: "circuit_open",
+    });
+  });
+
+  it("survives a whole universe of instruments that have no calendar", async () => {
+    const client = new FakeClient({
+      quoteSummary: (symbol) =>
+        Promise.reject(new MarketDataError(`No fundamentals data found for symbol: ${symbol}`, "permanent")),
+    });
+    const funds = ["IWDA.AS", "EUNL.DE", "VWCE.DE", "VUSA.AS"];
+    await expect(adapter(client).getUpcomingEarnings(funds, 7)).resolves.toEqual([]);
   });
 });

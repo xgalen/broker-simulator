@@ -332,9 +332,17 @@ export class YahooMarketData implements MarketDataPort {
       try {
         raw = await this.run(() => this.client.quoteSummary(ticker, ["calendarEvents"]));
       } catch (error) {
-        // One name without a calendar must not cost the whole brief its
-        // earnings section; a real outage still trips the breaker below.
-        if (error instanceof MarketDataError && error.failure === "permanent") continue;
+        // One instrument must never cost the whole brief its earnings section,
+        // and through it the session. An ETF has no earnings calendar, so the
+        // very first fund in the universe would otherwise end every run.
+        //
+        // `transient` is skipped here too: retries are already spent by the
+        // time this catch is reached, so the choice left is this instrument or
+        // the session. `circuit_open` is different in kind — the upstream is
+        // down, not this symbol — so it propagates and the run skips properly
+        // (SPEC 1 rule 5) rather than reporting an earnings section that is
+        // empty because nothing could be fetched at all.
+        if (error instanceof MarketDataError && error.failure !== "circuit_open") continue;
         throw error;
       }
       const earnings = raw.calendarEvents?.earnings;

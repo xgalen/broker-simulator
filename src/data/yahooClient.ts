@@ -140,6 +140,12 @@ export const DEFAULT_RATE_LIMIT: RateLimitPolicy = {
  * long we can be wrong about that, whereas calling a real outage `permanent`
  * would skip a day of trading over one bad response.
  */
+/**
+ * Yahoo's way of saying an instrument has no data of the kind asked for, e.g.
+ * `No fundamentals data found for symbol: IWDA.AS`.
+ */
+const NO_DATA_FOR_SYMBOL = /No .*data found for symbol/i;
+
 export function classifyError(error: unknown): MarketDataError {
   if (error instanceof MarketDataError) return error;
 
@@ -157,6 +163,13 @@ export function classifyError(error: unknown): MarketDataError {
       "permanent",
       error,
     );
+  }
+  // Yahoo reports "this instrument simply has no such data" as a plain Error,
+  // with no distinguishing class. An ETF has no earnings calendar and an index
+  // has no fundamentals, so this is a fact about the instrument, not a fault:
+  // retrying it three times only spends the rate limit to be told again.
+  if (NO_DATA_FOR_SYMBOL.test(message)) {
+    return new MarketDataError(message, "permanent", error);
   }
   return new MarketDataError(message, "transient", error);
 }
