@@ -72,12 +72,23 @@ import { decisionId, IdSequencer } from "./ids.js";
  * decision record carries `decidedAt`.
  */
 const STAGE_TIME = {
+  /**
+   * A skip is stamped at the *start* of its day, before every other stage.
+   *
+   * It reads backwards — the run that skips happens in the evening — but these
+   * are ordering devices, not instants, and ordering is the whole job here. A
+   * day that skips and is later re-run successfully (the data source came
+   * back, a bug was fixed) would otherwise have its deposit at 09:30 land
+   * behind a skip already recorded at 22:30, and the log would replay out of
+   * order. Stamped first, the skip simply precedes the session that
+   * superseded it, and the ledger honestly shows both.
+   */
+  skipped: "00:30:00.000Z",
   fill: "08:00:00.000Z",
   corporate: "09:00:00.000Z",
   deposit: "09:30:00.000Z",
   decision: "21:00:00.000Z",
   valuation: "22:00:00.000Z",
-  skipped: "22:30:00.000Z",
 } as const;
 
 type Stage = keyof typeof STAGE_TIME;
