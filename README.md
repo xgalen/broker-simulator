@@ -52,21 +52,24 @@ Built in phases (`SPEC.md` §12), each green before the next starts.
 | 2 | Data layer — `yahoo-finance2`, caching, failure handling | done |
 | 3 | Brief builder | done |
 | 4 | The two control portfolios, end to end on a cron | done |
-| 5–6 | The five LLM agents | not started |
+| 5 | The `value` agent — Strands, tools, schema gate, decision records | done |
+| 6 | The remaining four agents | not started |
 | 7 | Dashboard | not started |
 | 8 | Monthly review and the playbook mechanism | not started |
 | 9 | Workflow hardening and Pages deployment | not started |
 
 Phase 4 runs the whole pipeline — fills, deposits, corporate actions, order
 validation, daily marks — with **zero LLM spend**, which is the point of
-building the controls first. The five agents are declared in
-`config/portfolios.yaml` and disabled until their phase lands.
+building the controls first. Phase 5 adds one agent, `value`, to that same
+pipeline: the engine cannot tell it apart from a control, and its orders go
+through the same validator and the same ledger. The other four agents are
+declared in `config/portfolios.yaml` and disabled until phase 6.
 
 ## Running it
 
 ```sh
 pnpm install
-pnpm test              # 400+ unit tests, no network access anywhere
+pnpm test              # 500+ unit tests, no network access and no API key anywhere
 pnpm build
 
 pnpm dry-run           # replay recorded price fixtures across simulated days
@@ -74,6 +77,16 @@ pnpm verify            # replay the ledger, assert every invariant
 pnpm rebuild-state     # regenerate state.json from events.jsonl
 node dist/cli/main.js run-daily   # one live session
 ```
+
+### Secrets
+
+`run-daily` reads two optional environment variables, both repo secrets, and
+neither is logged or written to `data/`:
+
+| | |
+|---|---|
+| `ANTHROPIC_API_KEY` | Required for the agents. Missing, each enabled agent records a hold saying so and the controls run as normal — a rotated secret must not cost the ledger a day. |
+| `BRAVE_API_KEY` or `TAVILY_API_KEY` | Optional. Missing, `webSearch` reports that no provider is configured rather than returning an empty result set, which would read as "the web knows nothing about this". `WEB_SEARCH_PROVIDER` picks between them, or `none` switches search off. |
 
 `pnpm dry-run` is the one worth knowing about. The daily run happens once a
 day, which is a poor feedback loop for the parts of it that only fire monthly —
@@ -93,6 +106,7 @@ src/data    yahoo-finance2 adapters, RSS, caching, rate limiting, breakers
 src/brief   the daily market brief, built once and handed to every portfolio
 src/engine  fills, deposits, corporate actions, validation, the daily mark
 src/controls  the two deterministic control portfolios
+src/agents  the Strands agents: prompts, tools, schema, cost, decision records
 src/cli     run-daily, verify, rebuild-state, dry-run
 data/       the committed dataset (see data/README.md)
 ```

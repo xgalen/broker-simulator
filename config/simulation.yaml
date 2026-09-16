@@ -33,3 +33,69 @@ engine:
 metrics:
   # EUR risk-free rate for the Sharpe ratio (SPEC 9), annual fraction.
   riskFreeAnnual: 0.025
+
+# --- Agents (SPEC 7) --------------------------------------------------------
+#
+# The cost and loop controls for the Strands agents. These are guardrails, so
+# they live here with the other guardrails and not in anything the monthly
+# review can reach: SPEC 10 is explicit that learning may not alter the token
+# budget, and the only way to guarantee that is for the budget not to be in a
+# file learning writes to.
+agents:
+  # SPEC 7: "Strands turn limit: 12 tool calls per run." Enforced twice, on
+  # purpose. `maxToolCalls` is the SPEC number and is counted by the tool
+  # wrapper itself, so the 13th call is refused whatever the SDK does with it.
+  # `maxTurns` is the SDK's own loop cap (a turn is one model call plus the
+  # tools that follow it) and exists so a model that calls no tools at all
+  # still cannot loop: it is deliberately a little above the tool budget,
+  # because the final structured-output call costs a turn of its own.
+  maxToolCalls: 12
+  maxTurns: 15
+
+  # SPEC 7: "Token budget per run enforced by the SDK." Cumulative across every
+  # model call in one agent's run — each call resends the conversation, so this
+  # compounds and is roughly what a run is billed for. Exceeding it aborts the
+  # agent and writes a HOLD (SPEC 7).
+  maxTotalTokensPerRun: 200000
+  maxOutputTokensPerRun: 24000
+
+  # Per model call, not per run.
+  maxTokens: 8000
+
+  # There is deliberately no `temperature` here. Every current Claude model
+  # rejects the sampling parameters with a 400, and a knob that cannot be
+  # turned is worse than no knob: it reads like a tuning surface and is in fact
+  # a way to break the daily run.
+
+  # SPEC 7: "Cap at 5 searches per agent per run."
+  maxWebSearches: 5
+
+  # How many days of its own past decisions an agent is shown (SPEC 7).
+  decisionHistoryDays: 30
+
+  # SPEC 7: "Record model ID, input/output tokens and computed cost in every
+  # decision record, and surface cumulative LLM spend on the dashboard."
+  #
+  # Anthropic bills in USD, so the rates are USD per million tokens and the
+  # recorded cost carries both: the exact USD figure and its EUR value at the
+  # brief's own EURUSD rate. Converting at the day's committed rate keeps the
+  # cost line on the same footing as every other number in this project — and
+  # SPEC 4 already insists FX be visible rather than baked in.
+  #
+  # Cache reads are 0.1x the input rate and 5-minute cache writes 1.25x.
+  pricing:
+    claude-sonnet-5:
+      inputPerMTokUsd: 2.00
+      outputPerMTokUsd: 10.00
+      cacheReadPerMTokUsd: 0.20
+      cacheWritePerMTokUsd: 2.50
+    claude-opus-5:
+      inputPerMTokUsd: 5.00
+      outputPerMTokUsd: 25.00
+      cacheReadPerMTokUsd: 0.50
+      cacheWritePerMTokUsd: 6.25
+    claude-haiku-4-5:
+      inputPerMTokUsd: 1.00
+      outputPerMTokUsd: 5.00
+      cacheReadPerMTokUsd: 0.10
+      cacheWritePerMTokUsd: 1.25

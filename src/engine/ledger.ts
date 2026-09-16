@@ -9,7 +9,14 @@
  * module and no delete path, on purpose: the only supported way to change what
  * the ledger says is to append an event that says something new.
  */
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join } from "node:path";
 import { parseEventLog, type LedgerEvent } from "../domain/events.js";
 import type { ReplayResult } from "../domain/replay.js";
@@ -17,7 +24,11 @@ import type { MetricsOptions } from "../domain/metrics.js";
 import { buildState, serializeState, type StateFile } from "../domain/state.js";
 import type { IsoDate, PortfolioId } from "../domain/types.js";
 import { canonicalize } from "../brief/hash.js";
-import { decisionRecordPath, type DecisionRecord } from "./decision.js";
+import {
+  decisionRecordPath,
+  DecisionRecordSchema,
+  type DecisionRecord,
+} from "./decision.js";
 
 export function eventsPath(dataRoot: string): string {
   return join(dataRoot, "events.jsonl");
@@ -110,4 +121,56 @@ export function writeDecisionRecord(dataRoot: string, record: DecisionRecord): s
 
 export function readDecisionRecord(file: string): unknown {
   return JSON.parse(readFileSync(file, "utf8"));
+}
+
+/**
+ * The decision records a portfolio wrote in the `days` before `sessionDate`,
+ * newest first (SPEC 7: "its own decision history for the last 30 days —
+ * rationales included, so it can be consistent with or deliberately contradict
+ * its past self").
+ *
+ * Strictly *before* the session: the record for today has not been written yet
+ * when the agent is asked to decide, and a window that included it would be a
+ * window that could show an agent its own answer.
+ *
+ * A record that fails to parse is skipped rather than fatal. The history is an
+ * input to a prompt, not to a balance, and one corrupt file from an older
+ * schema must not stop tonight's run.
+ */
+export function readRecentDecisions(
+  dataRoot: string,
+  portfolio: PortfolioId,
+  sessionDate: IsoDate,
+  days: number,
+): readonly DecisionRecord[] {
+  const root = join(dataRoot, "decisions");
+  if (days <= 0 || !existsSync(root)) return [];
+
+  const from = shiftIsoDate(sessionDate, -days);
+  const dates = readdirSync(root, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .filter((date) => date >= from && date < sessionDate)
+    .sort()
+    .reverse();
+
+  const records: DecisionRecord[] = [];
+  for (const date of dates) {
+    const file = decisionPath(dataRoot, date, portfolio);
+    if (!existsSync(file)) continue;
+    try {
+      const parsed = DecisionRecordSchema.safeParse(JSON.parse(readFileSync(file, "utf8")));
+      if (parsed.success) records.push(parsed.data);
+    } catch {
+      continue;
+    }
+  }
+  return records;
+}
+
+/** Shift a calendar date by whole days, in UTC. Reads no clock. */
+function shiftIsoDate(date: IsoDate, days: number): IsoDate {
+  return new Date(Date.parse(`${date}T00:00:00Z`) + days * 86_400_000)
+    .toISOString()
+    .slice(0, 10);
 }

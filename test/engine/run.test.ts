@@ -77,7 +77,7 @@ describe("the SPEC 8 sequence", () => {
 
   it("writes a mark for every portfolio on every session, activity or not", async () => {
     const history = await play(4);
-    for (const key of ["dca", "random"]) {
+    for (const key of ["dca", "random", "value"]) {
       const marks = history.filter((e) => e.type === "VALUATION" && e.portfolio === key);
       expect(marks.map((e) => e.ts.slice(0, 10)), key).toEqual(SESSIONS.map((s) => s.date));
     }
@@ -105,7 +105,7 @@ describe("the SPEC 8 sequence", () => {
       const run = await runSession({ sessions: SESSIONS, index, history });
       history.push(...run.events);
       // SPEC 14: "Every run in data/decisions/ has a rationale, including holds."
-      expect(run.decisions).toHaveLength(2);
+      expect(run.decisions).toHaveLength(3);
       for (const record of run.decisions) {
         expect(record.rationale.length, record.portfolio).toBeGreaterThan(0);
         expect(record.briefHash).toMatch(/^sha256:[0-9a-f]{64}$/);
@@ -129,8 +129,8 @@ describe("SPEC 1.5: a data failure means no trading", () => {
     });
 
     expect(run.status).toBe("skipped");
-    expect(run.events.map((e) => e.type)).toEqual(["SKIPPED", "SKIPPED"]);
-    expect(run.events.map((e) => e.portfolio)).toEqual(["dca", "random"]);
+    expect(run.events.map((e) => e.type)).toEqual(["SKIPPED", "SKIPPED", "SKIPPED"]);
+    expect(run.events.map((e) => e.portfolio)).toEqual(["dca", "random", "value"]);
     expect(run.events.every((e) => e.type === "SKIPPED" && e.reason === "data_fetch_failed")).toBe(
       true,
     );

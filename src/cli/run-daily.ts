@@ -11,10 +11,15 @@ import type { Clock } from "../domain/clock.js";
 import { replay } from "../domain/replay.js";
 import { writeBrief, writePrices } from "../brief/store.js";
 import { createControls } from "../controls/index.js";
+import { createAgents } from "../agents/index.js";
+import type { DecisionHistoryPort, PlaybookPort } from "../agents/agent.js";
+import { unavailableModelFactory, type ModelFactory } from "../agents/model.js";
+import { DisabledWebSearch, type WebSearchPort } from "../agents/search.js";
 import type { Decider } from "../engine/decision.js";
 import {
   appendEvents,
   readEvents,
+  readRecentDecisions,
   writeDecisionRecord,
   writeState,
 } from "../engine/ledger.js";
@@ -23,6 +28,25 @@ import type { LoadedConfig } from "./context.js";
 import type { MarketDataPort } from "../data/port.js";
 import type { FeedReaderPort } from "../data/rss.js";
 import type { IsoDate } from "../domain/types.js";
+
+/**
+ * What the agents need to run (SPEC 7).
+ *
+ * `models` is nullable on purpose. An enabled agent with no credential must
+ * not take the session down: it is handed a factory that refuses, turns that
+ * into a recorded HOLD, and the controls still get their day. See
+ * `unavailableModelFactory`.
+ */
+export interface AgentWiring {
+  readonly models: ModelFactory | null;
+  readonly search?: WebSearchPort;
+  /** Defaults to reading `data/decisions/` under `dataRoot`. */
+  readonly history?: DecisionHistoryPort;
+  /** Playbooks arrive in phase 8; until then every agent is handed none. */
+  readonly playbooks?: PlaybookPort;
+  /** Why `models` is null, for the log and the recorded hold. */
+  readonly unavailable?: string | null;
+}
 
 export interface RunDailyCliOptions {
   readonly config: LoadedConfig;
@@ -34,6 +58,8 @@ export interface RunDailyCliOptions {
   /** Compute everything and print it, but commit nothing to `data/`. */
   readonly dryRun?: boolean;
   readonly log?: (line: string) => void;
+  /** Omitted, the agents run with no model and hold with a reason. */
+  readonly agents?: AgentWiring;
 }
 
 export interface RunDailyCliResult {
@@ -57,9 +83,12 @@ export async function runDailyCli(
   const log = options.log ?? ((line: string) => console.log(line));
   const { config } = options;
 
-  // Phase 4 runs the controls only. Phases 5-6 add the agents to this map;
-  // nothing else in the daily sequence has to change when they do.
-  const deciders: ReadonlyMap<string, Decider> = createControls(config.portfolios.all);
+  // The two halves of the cast, in one map the engine cannot tell apart: the
+  // deterministic controls of phase 4 and the Strands agents of phase 5.
+  const deciders = new Map<string, Decider>(createControls(config.portfolios.all));
+  for (const [key, agent] of buildAgents(options, log)) {
+    deciders.set(key, agent);
+  }
   for (const portfolio of config.portfolios.active) {
     if (!deciders.has(portfolio.key)) {
       throw new Error(
@@ -140,4 +169,54 @@ export function describeRun(run: RunDailyResult): string {
   if (rejects > 0) parts.push(`${rejects} rejected`);
 
   return `sim: ${run.sessionDate ?? "?"} (${parts.join(", ")})`;
+}
+
+/**
+ * Build the agent deciders for this run.
+ *
+ * The no-credential path is the interesting one. SPEC 1.7 says every decision
+ * is recorded, including a decision to do nothing, and "the key is missing" is
+ * a perfectly good reason to do nothing — so the agent is built with a factory
+ * that refuses and the refusal lands in `data/decisions/` as a hold. What must
+ * not happen is a nightly job that exits non-zero because a secret rotated:
+ * the controls would lose their day too, and the ledger would develop a gap
+ * that no amount of later repair can honestly fill.
+ */
+function buildAgents(
+  options: RunDailyCliOptions,
+  log: (line: string) => void,
+): Map<string, Decider> {
+  const { config } = options;
+  const wiring = options.agents;
+  const enabled = config.portfolios.active.filter((portfolio) => portfolio.kind === "agent");
+  if (enabled.length === 0) return new Map();
+
+  const reason =
+    wiring?.unavailable ??
+    (wiring === undefined ? "no agent wiring was supplied to this run" : null);
+
+  let models = wiring?.models ?? null;
+  if (models === null) {
+    const detail = reason ?? "no model factory was supplied";
+    log(`  warning: ${detail}`);
+    log(
+      `  warning: ${enabled.map((portfolio) => portfolio.key).join(", ")} will record a hold instead of deciding`,
+    );
+    models = unavailableModelFactory(detail);
+  }
+
+  return createAgents({
+    portfolios: config.portfolios.all,
+    mandates: config.mandates,
+    models,
+    market: options.market,
+    search: wiring?.search ?? new DisabledWebSearch("no web search provider is configured"),
+    history:
+      wiring?.history ?? {
+        recent: (portfolio, sessionDate, days) =>
+          readRecentDecisions(options.dataRoot, portfolio, sessionDate, days),
+      },
+    ...(wiring?.playbooks === undefined ? {} : { playbooks: wiring.playbooks }),
+    log: (line) => log(`  ${line}`),
+  });
 }

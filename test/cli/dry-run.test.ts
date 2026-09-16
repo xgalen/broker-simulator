@@ -48,6 +48,13 @@ afterAll(() => {
   rmSync(outDir, { recursive: true, force: true });
 });
 
+/**
+ * The portfolios the dry run drives: phase 4's two controls plus phase 5's one
+ * agent, which runs here against a scripted model so the replay still needs no
+ * network and no API key.
+ */
+const ACTIVE = ["dca", "random", "value"] as const;
+
 describe("the scenario itself", () => {
   it("runs forward only (SPEC 1.2)", () => {
     const scenario = parseScenario(repoText("fixtures", "dry-run", "controls.json"), "controls.json");
@@ -70,7 +77,7 @@ describe("the replay", () => {
 
   it("writes a mark per portfolio per session, and nothing to the real data/", () => {
     expect(events.filter((event) => event.type === "VALUATION")).toHaveLength(
-      result.sessions.length * 2,
+      result.sessions.length * ACTIVE.length,
     );
     expect(outDir).not.toContain(join(repoRoot, "data"));
   });
@@ -231,13 +238,15 @@ describe("the ledger it leaves behind (SPEC 14)", () => {
     expect(days).toHaveLength(result.sessions.length);
     for (const day of days) {
       const files = readdirSync(join(outDir, "decisions", day)).sort();
-      expect(files, day).toEqual(["dca.json", "random.json"]);
+      expect(files, day).toEqual(ACTIVE.map((key) => `${key}.json`).sort());
       for (const file of files) {
         const record = DecisionRecordSchema.parse(
           JSON.parse(readFileSync(join(outDir, "decisions", day, file), "utf8")),
         );
         expect(record.rationale.length, `${day}/${file}`).toBeGreaterThan(0);
-        expect(record.kind, `${day}/${file}`).toBe("control");
+        expect(record.kind, `${day}/${file}`).toBe(
+          record.portfolio === "value" ? "agent" : "control",
+        );
         for (const order of record.orders) {
           // SPEC 7: the invalidation field is mandatory and non-empty.
           expect(order.invalidation.length, order.orderId).toBeGreaterThan(0);

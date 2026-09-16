@@ -17,7 +17,6 @@ import { parseFeeds, type FeedsDocument } from "../../src/data/feeds.js";
 import { FixtureFeedReader, FixtureMarketData } from "../../src/data/fixtures.js";
 import type { CorporateAction, DailyBar, PriceSnapshot } from "../../src/data/port.js";
 import { fixedClock } from "../../src/domain/clock.js";
-import { createControls } from "../../src/controls/index.js";
 import { runDaily, type RunDailyResult } from "../../src/engine/run.js";
 import type { Decider } from "../../src/engine/decision.js";
 import {
@@ -33,6 +32,10 @@ import { sealBrief } from "../../src/brief/hash.js";
 import { BRIEF_SCHEMA_VERSION } from "../../src/brief/types.js";
 
 export const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+
+// Imported late: `helpers/agents.ts` imports this module for the roster and
+// the repo paths, so the edge has to go this way round.
+import { deciders } from "./agents.js";
 
 export function repoText(...parts: string[]): string {
   return readFileSync(join(repoRoot, ...parts), "utf8");
@@ -362,7 +365,10 @@ export function runSession(
       }),
     feedReader: new FixtureFeedReader({}),
     clock: fixedClock(`${session.date}T21:30:00.000Z`),
-    deciders: options.deciders ?? createControls(portfolios.all),
+    // Controls plus the mocked agents (see `helpers/agents.ts`): the roster the
+    // daily run actually assembles, so an engine test drives the agent leg too
+    // rather than one the engine happens not to have.
+    deciders: options.deciders ?? deciders(),
     history: options.history,
     sessionDate: session.date,
   });

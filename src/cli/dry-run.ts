@@ -29,7 +29,10 @@ import { parseFeeds } from "../data/feeds.js";
 import { parseUniverse } from "../data/universe.js";
 import { parsePortfolios, parseSimulation } from "../engine/config.js";
 import { readEvents } from "../engine/ledger.js";
-import type { LoadedConfig } from "./context.js";
+import { scriptedModelFactory, type MockTurn } from "../agents/mock.js";
+import { DisabledWebSearch } from "../agents/search.js";
+import { loadMandates, type LoadedConfig } from "./context.js";
+import type { AgentWiring } from "./run-daily.js";
 import { rebuildStateCli } from "./rebuild-state.js";
 import { runDailyCli } from "./run-daily.js";
 import { verifyCli } from "./verify.js";
@@ -175,11 +178,58 @@ function loadScenarioConfig(scenario: Scenario, repoRoot: string): LoadedConfig 
 
   const universe = parseUniverse(read(scenario.config.universe));
   const simulation = parseSimulation(read(scenario.config.simulation));
+  const portfolios = parsePortfolios(read(scenario.config.portfolios), { simulation });
   return {
     universe,
     simulation,
+    portfolios,
     feeds: parseFeeds(read(scenario.config.feeds)),
-    portfolios: parsePortfolios(read(scenario.config.portfolios), { simulation }),
+    mandates: loadMandates(portfolios.all, repoRoot),
+  };
+}
+
+/**
+ * The agent wiring for a dry run: a scripted model and no web search.
+ *
+ * The dry run must work with the network unplugged, so it cannot call
+ * Anthropic — but running the agent leg against a *stub decider* would leave
+ * the interesting half untested, because the interesting half is the Strands
+ * loop itself: the tool executor, the structured-output tool, the schema gate,
+ * the budget limits. `MockModel` replaces the HTTP call and nothing else, so
+ * everything above it is the real thing.
+ *
+ * The script makes one real tool call — which exercises the look-ahead clamp
+ * against the scenario's own bars — and then holds. It holds rather than
+ * trading on purpose: the dry run exists to prove the *engine*, the controls
+ * already drive fills and deposits through it, and an agent inventing trades
+ * from a fixture would put numbers in the scratch ledger that mean nothing.
+ * The agent's own trade path is proved in `test/agents/run.test.ts`.
+ */
+function dryRunAgents(scenario: Scenario, config: LoadedConfig): AgentWiring {
+  const ticker = config.universe.document.dcaInstrument;
+  const script: readonly MockTurn[] = [
+    { kind: "tool", name: "getPriceHistory", input: { ticker, range: "1m" } },
+    {
+      kind: "output",
+      value: {
+        action: "hold",
+        rationale:
+          `Dry run against the "${scenario.name}" fixture: prices here are a synthetic ` +
+          `random walk, not a market, so there is no valuation case to make. Read one ` +
+          `month of ${ticker} to exercise the price tool and held.`,
+        confidence: 1,
+        orders: [],
+        sourcesUsed: [],
+      },
+    },
+  ];
+
+  return {
+    models: scriptedModelFactory(script, { kind: "mock" }),
+    search: new DisabledWebSearch("dry-run: the network is not available"),
+    // A fresh scratch directory each time, so the history port would find
+    // nothing anyway — but saying so keeps the dry run independent of `data/`.
+    history: { recent: () => [] },
   };
 }
 
@@ -279,6 +329,7 @@ export async function dryRunCli(options: DryRunOptions): Promise<DryRunResult> {
   log("");
 
   const actions = toActions(scenario);
+  const agents = dryRunAgents(scenario, config);
   const results: DryRunSessionResult[] = [];
 
   for (const [index, session] of scenario.sessions.entries()) {
@@ -297,6 +348,7 @@ export async function dryRunCli(options: DryRunOptions): Promise<DryRunResult> {
       clock: fixedClock(session.at ?? `${session.date}T21:30:00.000Z`),
       dataRoot: outDir,
       sessionDate: session.date,
+      agents,
       log: () => {},
     });
 

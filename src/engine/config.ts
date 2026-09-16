@@ -31,6 +31,70 @@ const MetricsSchema = z.object({
   riskFreeAnnual: z.number().finite().default(0),
 });
 
+/**
+ * What one model costs, in USD per million tokens (SPEC 7).
+ *
+ * Anthropic bills in USD; this project is denominated in EUR. Both are kept:
+ * the USD figure is what the invoice will say, and the decision record also
+ * carries its EUR value at the brief's own EURUSD rate. Guessing a rate here
+ * would put a made-up number on the dashboard's cost line.
+ */
+const ModelPriceSchema = z.object({
+  inputPerMTokUsd: nonNegative,
+  outputPerMTokUsd: nonNegative,
+  /** Cached input, normally 0.1x the input rate. */
+  cacheReadPerMTokUsd: nonNegative.default(0),
+  /** Writing to the cache, normally 1.25x the input rate at a 5m TTL. */
+  cacheWritePerMTokUsd: nonNegative.default(0),
+});
+
+/**
+ * SPEC 7's cost and loop controls, shared by every agent.
+ *
+ * These are guardrails and live with the guardrails: SPEC 10 forbids the
+ * learning loop from altering the token budget, and the cheapest way to
+ * guarantee that is to keep the budget out of any file learning writes to.
+ */
+const AgentsSchema = z.object({
+  /** SPEC 7: "12 tool calls per run", counted by the tool wrapper itself. */
+  maxToolCalls: z.number().int().positive().default(12),
+  /** The SDK's own loop cap. A turn is one model call plus its tools. */
+  maxTurns: z.number().int().positive().default(15),
+  /** Cumulative input + output across the run (SPEC 7's token budget). */
+  maxTotalTokensPerRun: z.number().int().positive().default(200_000),
+  maxOutputTokensPerRun: z.number().int().positive().default(24_000),
+  /** Per model call, not per run. */
+  maxTokens: z.number().int().positive().default(8_000),
+  /** SPEC 7: "Cap at 5 searches per agent per run." */
+  maxWebSearches: z.number().int().nonnegative().default(5),
+  /** SPEC 7: "its own decision history for the last 30 days". */
+  decisionHistoryDays: z.number().int().nonnegative().default(30),
+  pricing: z.record(z.string(), ModelPriceSchema).default({}),
+});
+
+export type ModelPrice = Readonly<z.infer<typeof ModelPriceSchema>>;
+export type AgentsConfig = Readonly<z.infer<typeof AgentsSchema>>;
+
+/**
+ * The block a `simulation.yaml` with no `agents:` section resolves to.
+ *
+ * Spelled out rather than derived, because zod's `.default()` wants the parsed
+ * shape and because a reader of this file should be able to see what a config
+ * that says nothing actually gets. `pricing` is empty on purpose: an invented
+ * price would put a fabricated number on the dashboard's cost line, and an
+ * absent one is recorded as "unknown".
+ */
+const AGENT_DEFAULTS: z.infer<typeof AgentsSchema> = {
+  maxToolCalls: 12,
+  maxTurns: 15,
+  maxTotalTokensPerRun: 200_000,
+  maxOutputTokensPerRun: 24_000,
+  maxTokens: 8_000,
+  maxWebSearches: 5,
+  decisionHistoryDays: 30,
+  pricing: {},
+};
+
 export const SimulationSchema = z.object({
   schemaVersion: z.number().int().positive(),
   initialDepositEur: positive,
@@ -42,6 +106,7 @@ export const SimulationSchema = z.object({
   dividendWithholdingPct: z.number().finite().min(0).max(100),
   engine: EngineSchema.default({ pendingOrderExpirySessions: 5, maxQuoteAgeSessions: 1 }),
   metrics: MetricsSchema.default({ riskFreeAnnual: 0 }),
+  agents: AgentsSchema.default(AGENT_DEFAULTS),
 });
 
 export type SimulationConfig = Readonly<z.infer<typeof SimulationSchema>>;

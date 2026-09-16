@@ -50,8 +50,14 @@ describe("portfolios.yaml", () => {
     expect(portfolios.controls.map((p) => p.key)).toEqual(["dca", "random"]);
   });
 
-  it("runs only the controls in phase 4", () => {
-    expect(portfolios.activeKeys).toEqual(["dca", "random"]);
+  it("runs the two controls and the one agent phase 5 enables", () => {
+    // SPEC 12: phase 5 is "one agent (`value`) with Strands". The other four
+    // stay declared and disabled until phase 6 — a declared-but-unbuilt agent
+    // must not produce empty days in the log.
+    expect(portfolios.activeKeys).toEqual(["dca", "random", "value"]);
+    expect(portfolios.all.filter((p) => p.kind === "agent" && p.enabled).map((p) => p.key)).toEqual([
+      "value",
+    ]);
   });
 
   it("resolves guardrails against the defaults, overriding only what is stated", () => {

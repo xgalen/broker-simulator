@@ -13,7 +13,7 @@
  */
 import { resolve } from "node:path";
 import { boolFlag, flag, optionalFlag, parseArgs } from "./args.js";
-import { createLivePorts, loadConfig, systemClock } from "./context.js";
+import { createAgentPorts, createLivePorts, loadConfig, systemClock } from "./context.js";
 import { dryRunCli, DEFAULT_SCENARIO } from "./dry-run.js";
 import { rebuildStateCli } from "./rebuild-state.js";
 import { runDailyCli } from "./run-daily.js";
@@ -50,6 +50,7 @@ async function main(): Promise<number> {
       const config = loadConfig(configDir);
       const clock = systemClock();
       const ports = createLivePorts(clock, config.feeds);
+      const agents = createAgentPorts();
       const session = optionalFlag(args, "session");
       const result = await runDailyCli({
         config,
@@ -57,6 +58,7 @@ async function main(): Promise<number> {
         feedReader: ports.feedReader,
         clock,
         dataRoot,
+        agents,
         ...(session ? { sessionDate: session } : {}),
         ...(boolFlag(args, "dry") ? { dryRun: true } : {}),
       });

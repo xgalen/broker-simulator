@@ -71,10 +71,34 @@ export interface DecisionContext {
   readonly tradesThisMonth: number;
 }
 
-/** A control or an agent. Async so phase 5 can drop a Strands agent in as-is. */
+/**
+ * A decision, plus whatever the decider wants recorded alongside it.
+ *
+ * The controls have nothing to add and return a bare `Decision`. An agent has
+ * a great deal to add — the prompt it was given, the searches it ran, the
+ * tokens it burned, what it cost (SPEC 7) — and returning it here keeps that
+ * explicit: there is no second call to fetch it, and no decider state that has
+ * to survive between `decide` and the record being written.
+ */
+export interface DecisionOutcome {
+  readonly decision: Decision;
+  /** Merged into the decision record's `meta` under the decider's own keys. */
+  readonly meta?: Readonly<Record<string, unknown>>;
+}
+
+export type DecisionResult = Decision | DecisionOutcome;
+
+/** A control or an agent. Async so a Strands agent drops in as-is. */
 export interface Decider {
   readonly portfolio: PortfolioId;
-  decide(context: DecisionContext): Promise<Decision> | Decision;
+  decide(context: DecisionContext): Promise<DecisionResult> | DecisionResult;
+}
+
+/** Split whatever a decider returned into the decision and its extra record. */
+export function splitOutcome(result: DecisionResult): Required<DecisionOutcome> {
+  return "decision" in result
+    ? { decision: result.decision, meta: result.meta ?? {} }
+    : { decision: result, meta: {} };
 }
 
 // --- The committed record ---------------------------------------------------

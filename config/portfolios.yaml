@@ -94,9 +94,13 @@ portfolios:
       # SPEC 8: "minHoldDays: 3 # 0 for `news`".
       minHoldDays: 0
 
+  # Phase 5 (SPEC 12): the first and, for now, the only live agent. The other
+  # four stay disabled until phase 6 — SPEC 12 says one agent proves the
+  # Strands wiring, the tools, the schema gate and the decision record before
+  # five of them are spending money every evening.
   - key: value
     kind: agent
-    enabled: false
+    enabled: true
     mandate: config/mandates/value.md
     model: claude-sonnet-5
     learning: enabled

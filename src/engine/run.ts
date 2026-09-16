@@ -45,6 +45,8 @@ import { applyCorporateActions, actionWindow } from "./corporate.js";
 import type { PortfolioConfig, Portfolios, SimulationConfig } from "./config.js";
 import {
   buildDecisionRecord,
+  parseDecision,
+  splitOutcome,
   type Decider,
   type DecisionContext,
   type DecisionRecord,
@@ -432,7 +434,14 @@ async function runPortfolio(input: PortfolioRunInput): Promise<PortfolioRunSumma
   if (decider === undefined) {
     throw new Error(`no decider registered for active portfolio "${key}"`);
   }
-  const decision = await decider.decide(context);
+  const outcome = splitOutcome(await decider.decide(context));
+
+  // Every decider's output goes through the same zod gate before the engine
+  // acts on it (SPEC 7: "validated with zod before anything touches the
+  // ledger"). A control cannot really fail this and an agent absolutely can —
+  // which is the point of there being exactly one gate rather than a lenient
+  // path for the code we wrote and a strict one for the code we did not.
+  const decision = parseDecision(outcome.decision, key);
 
   const verdicts = validateOrders({
     portfolio,
@@ -529,6 +538,11 @@ async function runPortfolio(input: PortfolioRunInput): Promise<PortfolioRunSumma
         depositedTodayEur: context.depositedTodayEur,
         tradesThisMonth: context.tradesThisMonth,
         portfolioValueEur: valuationBeforeOrders.totalValueEur,
+        // Whatever the decider itself wants on the record: the RNG draw for
+        // `random`, the model, tokens, cost, prompt and search archive for an
+        // agent (SPEC 7). Spread last so a decider can never overwrite the
+        // engine's own numbers with its own account of them.
+        ...outcome.meta,
       },
     }),
   );

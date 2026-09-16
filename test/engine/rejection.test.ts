@@ -84,18 +84,20 @@ async function runWith(
     ["dca", new RogueDecider("dca", orders)],
     ["random", new RogueDecider("random", [])],
   ]);
-  // `random` gets an empty order list, which would fail the decision contract,
-  // so give it a hold instead.
-  deciders.set("random", {
-    portfolio: "random",
-    decide: () => ({
-      action: "hold" as const,
-      rationale: "not under test",
-      confidence: 1,
-      orders: [],
-      sourcesUsed: [],
-    }),
-  });
+  // `random` and `value` get an empty order list, which would fail the decision
+  // contract, so give them a hold instead. Only `dca` is under test here.
+  for (const key of ["random", "value"]) {
+    deciders.set(key, {
+      portfolio: key,
+      decide: () => ({
+        action: "hold" as const,
+        rationale: "not under test",
+        confidence: 1,
+        orders: [],
+        sourcesUsed: [],
+      }),
+    });
+  }
   return runSession({
     sessions: SESSIONS,
     index: 0,
