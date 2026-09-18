@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "asOf": "2026-09-17T22:00:00.000Z",
-  "eventCount": 17,
+  "asOf": "2026-09-18T00:30:00.000Z",
+  "eventCount": 20,
   "portfolios": [
     {
       "portfolio": "dca",
@@ -43,7 +43,7 @@
         "ordersFilled": 1,
         "ordersRejected": 0,
         "holds": 1,
-        "skips": 0,
+        "skips": 1,
         "deposits": 1,
         "splits": 0,
         "dividends": 0
@@ -113,7 +113,7 @@
         "ordersFilled": 1,
         "ordersRejected": 0,
         "holds": 1,
-        "skips": 0,
+        "skips": 1,
         "deposits": 1,
         "splits": 0,
         "dividends": 0
@@ -171,7 +171,7 @@
         "ordersFilled": 0,
         "ordersRejected": 0,
         "holds": 2,
-        "skips": 0,
+        "skips": 1,
         "deposits": 1,
         "splits": 0,
         "dividends": 0

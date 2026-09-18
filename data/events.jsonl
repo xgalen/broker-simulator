@@ -15,3 +15,6 @@
 {"cashEur":0,"contributedToDateEur":100,"fxEffectEur":0,"id":"2026-09-17/random/val/1","marketValueEur":101.06,"portfolio":"random","positions":[{"currency":"EUR","fxRate":1,"priceLocal":122.5,"qty":0.825,"ticker":"EBS.VI","valueEur":101.06}],"ts":"2026-09-17T22:00:00.000Z","type":"VALUATION"}
 {"decisionId":"2026-09-17/value/dec","id":"2026-09-17/value/hld/1","portfolio":"value","reason":"agent_error: ANTHROPIC_API_KEY is not set, so no agent can run. Set it as a repo secret (SPEC 13); it is never logged and never committed.. No order was placed.","ts":"2026-09-17T21:00:00.000Z","type":"HOLD"}
 {"cashEur":100,"contributedToDateEur":100,"fxEffectEur":0,"id":"2026-09-17/value/val/1","marketValueEur":0,"portfolio":"value","positions":[],"ts":"2026-09-17T22:00:00.000Z","type":"VALUATION"}
+{"id":"2026-09-18/dca/skp/1","portfolio":"dca","reason":"data_fetch_failed","ts":"2026-09-18T00:30:00.000Z","type":"SKIPPED"}
+{"id":"2026-09-18/random/skp/1","portfolio":"random","reason":"data_fetch_failed","ts":"2026-09-18T00:30:00.000Z","type":"SKIPPED"}
+{"id":"2026-09-18/value/skp/1","portfolio":"value","reason":"data_fetch_failed","ts":"2026-09-18T00:30:00.000Z","type":"SKIPPED"}
