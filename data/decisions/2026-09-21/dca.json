@@ -1,0 +1,20 @@
+{
+  "action": "hold",
+  "briefHash": "sha256:e6cf3fee9ddedbd32f2404b05d431e6b5bbedb59f8746b8399ef0013f7d29b38",
+  "confidence": 5,
+  "date": "2026-09-21",
+  "decidedAt": "2026-09-21T23:29:14.477Z",
+  "decisionId": "2026-09-21/dca/dec",
+  "kind": "control",
+  "meta": {
+    "availableCashEur": 0,
+    "depositedTodayEur": 0,
+    "portfolioValueEur": 100.22,
+    "tradesThisMonth": 1
+  },
+  "orders": [],
+  "portfolio": "dca",
+  "rationale": "dca holds by construction: 2026-09-21 is not a contribution session. Never sells.",
+  "schemaVersion": 1,
+  "sourcesUsed": []
+}
