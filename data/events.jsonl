@@ -36,3 +36,9 @@
 {"id":"2026-09-24/dca/skp/1","portfolio":"dca","reason":"data_fetch_failed","ts":"2026-09-24T00:30:00.000Z","type":"SKIPPED"}
 {"id":"2026-09-24/random/skp/1","portfolio":"random","reason":"data_fetch_failed","ts":"2026-09-24T00:30:00.000Z","type":"SKIPPED"}
 {"id":"2026-09-24/value/skp/1","portfolio":"value","reason":"data_fetch_failed","ts":"2026-09-24T00:30:00.000Z","type":"SKIPPED"}
+{"decisionId":"2026-09-25/dca/dec","id":"2026-09-25/dca/hld/1","portfolio":"dca","reason":"dca holds by construction: 2026-09-25 is not a contribution session. Never sells.","ts":"2026-09-25T21:00:00.000Z","type":"HOLD"}
+{"cashEur":0,"contributedToDateEur":100,"fxEffectEur":0,"id":"2026-09-25/dca/val/1","marketValueEur":100.45,"portfolio":"dca","positions":[{"currency":"EUR","fxRate":1,"priceLocal":128.91,"qty":0.7792,"ticker":"IWDA.AS","valueEur":100.45}],"ts":"2026-09-25T22:00:00.000Z","type":"VALUATION"}
+{"decisionId":"2026-09-25/random/dec","id":"2026-09-25/random/hld/1","portfolio":"random","reason":"random holds by construction: 2026-09-25 is not a contribution session. It buys once a month and never sells.","ts":"2026-09-25T21:00:00.000Z","type":"HOLD"}
+{"cashEur":0,"contributedToDateEur":100,"fxEffectEur":0,"id":"2026-09-25/random/val/1","marketValueEur":101.56,"portfolio":"random","positions":[{"currency":"EUR","fxRate":1,"priceLocal":123.1,"qty":0.825,"ticker":"EBS.VI","valueEur":101.56}],"ts":"2026-09-25T22:00:00.000Z","type":"VALUATION"}
+{"decisionId":"2026-09-25/value/dec","id":"2026-09-25/value/hld/1","portfolio":"value","reason":"agent_error: ANTHROPIC_API_KEY is not set, so no agent can run. Set it as a repo secret (SPEC 13); it is never logged and never committed.. No order was placed.","ts":"2026-09-25T21:00:00.000Z","type":"HOLD"}
+{"cashEur":100,"contributedToDateEur":100,"fxEffectEur":0,"id":"2026-09-25/value/val/1","marketValueEur":0,"portfolio":"value","positions":[],"ts":"2026-09-25T22:00:00.000Z","type":"VALUATION"}
