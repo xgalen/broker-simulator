@@ -1,0 +1,34 @@
+{
+  "action": "trade",
+  "briefHash": "sha256:4b1f571c6ac6ba8c24d44fa9ef7dbc5272a0e6575f75008c3ad7e09f01d937bb",
+  "confidence": 1,
+  "date": "2026-10-02",
+  "decidedAt": "2026-10-02T23:57:08.253Z",
+  "decisionId": "2026-10-02/random/dec",
+  "kind": "control",
+  "meta": {
+    "availableCashEur": 50,
+    "depositedTodayEur": 50,
+    "portfolioValueEur": 143.72,
+    "tradesThisMonth": 0
+  },
+  "orders": [
+    {
+      "detail": null,
+      "invalidation": "Nothing invalidates this order. The control never sells and holds no view that could be proven wrong.",
+      "orderId": "2026-10-02/random/ord/1",
+      "reasonCode": null,
+      "side": "buy",
+      "status": "placed",
+      "targetEur": 50,
+      "thesis": "No thesis. This control exists to measure how much of an agent's result survives comparison with an arbitrary long position carrying identical fees.",
+      "ticker": "MSFT"
+    }
+  ],
+  "portfolio": "random",
+  "rationale": "Uniform draw over 150 whitelisted instruments for 2026-10 selected MSFT (draw 1, seed \"broker-simulator/random/v1\"). 50.00 EUR deployed.",
+  "schemaVersion": 1,
+  "sourcesUsed": [
+    "sha256:4b1f571c6ac6ba8c24d44fa9ef7dbc5272a0e6575f75008c3ad7e09f01d937bb"
+  ]
+}

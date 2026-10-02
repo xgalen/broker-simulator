@@ -60,3 +60,12 @@
 {"id":"2026-10-02/dca/skp/1","portfolio":"dca","reason":"data_fetch_failed","ts":"2026-10-02T00:30:00.000Z","type":"SKIPPED"}
 {"id":"2026-10-02/random/skp/1","portfolio":"random","reason":"data_fetch_failed","ts":"2026-10-02T00:30:00.000Z","type":"SKIPPED"}
 {"id":"2026-10-02/value/skp/1","portfolio":"value","reason":"data_fetch_failed","ts":"2026-10-02T00:30:00.000Z","type":"SKIPPED"}
+{"amountEur":50,"id":"2026-10-02/dca/dep/1","portfolio":"dca","ts":"2026-10-02T09:30:00.000Z","type":"DEPOSIT"}
+{"decisionId":"2026-10-02/dca/dec","id":"2026-10-02/dca/ord/1","portfolio":"dca","reason":"Buy and hold a single global equity ETF. This control expresses no view: it is the passive baseline every agent is scored against.","side":"buy","targetEur":50,"ticker":"IWDA.AS","ts":"2026-10-02T21:00:00.000Z","type":"ORDER_PLACED"}
+{"cashEur":50,"contributedToDateEur":150,"fxEffectEur":0,"id":"2026-10-02/dca/val/1","marketValueEur":101.33,"portfolio":"dca","positions":[{"currency":"EUR","fxRate":1,"priceLocal":130.05,"qty":0.7792,"ticker":"IWDA.AS","valueEur":101.33}],"ts":"2026-10-02T22:00:00.000Z","type":"VALUATION"}
+{"amountEur":50,"id":"2026-10-02/random/dep/1","portfolio":"random","ts":"2026-10-02T09:30:00.000Z","type":"DEPOSIT"}
+{"decisionId":"2026-10-02/random/dec","id":"2026-10-02/random/ord/1","portfolio":"random","reason":"No thesis. This control exists to measure how much of an agent's result survives comparison with an arbitrary long position carrying identical fees.","side":"buy","targetEur":50,"ticker":"MSFT","ts":"2026-10-02T21:00:00.000Z","type":"ORDER_PLACED"}
+{"cashEur":50,"contributedToDateEur":150,"fxEffectEur":0,"id":"2026-10-02/random/val/1","marketValueEur":93.72,"portfolio":"random","positions":[{"currency":"EUR","fxRate":1,"priceLocal":113.6,"qty":0.825,"ticker":"EBS.VI","valueEur":93.72}],"ts":"2026-10-02T22:00:00.000Z","type":"VALUATION"}
+{"amountEur":50,"id":"2026-10-02/value/dep/1","portfolio":"value","ts":"2026-10-02T09:30:00.000Z","type":"DEPOSIT"}
+{"decisionId":"2026-10-02/value/dec","id":"2026-10-02/value/hld/1","portfolio":"value","reason":"agent_error: ANTHROPIC_API_KEY is not set, so no agent can run. Set it as a repo secret (SPEC 13); it is never logged and never committed.. No order was placed.","ts":"2026-10-02T21:00:00.000Z","type":"HOLD"}
+{"cashEur":150,"contributedToDateEur":150,"fxEffectEur":0,"id":"2026-10-02/value/val/1","marketValueEur":0,"portfolio":"value","positions":[],"ts":"2026-10-02T22:00:00.000Z","type":"VALUATION"}
