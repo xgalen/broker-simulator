@@ -101,3 +101,6 @@
 {"cashEur":0.04,"contributedToDateEur":150,"fxEffectEur":0.25,"id":"2026-10-12/random/val/1","marketValueEur":141.4,"portfolio":"random","positions":[{"currency":"EUR","fxRate":1,"priceLocal":109.7,"qty":0.825,"ticker":"EBS.VI","valueEur":90.5},{"currency":"USD","fxRate":1.1174432,"priceLocal":541.15,"qty":0.1051,"ticker":"MSFT","valueEur":50.9}],"ts":"2026-10-12T22:00:00.000Z","type":"VALUATION"}
 {"decisionId":"2026-10-12/value/dec","id":"2026-10-12/value/hld/1","portfolio":"value","reason":"agent_error: ANTHROPIC_API_KEY is not set, so no agent can run. Set it as a repo secret (SPEC 13); it is never logged and never committed.. No order was placed.","ts":"2026-10-12T21:00:00.000Z","type":"HOLD"}
 {"cashEur":150,"contributedToDateEur":150,"fxEffectEur":0,"id":"2026-10-12/value/val/1","marketValueEur":0,"portfolio":"value","positions":[],"ts":"2026-10-12T22:00:00.000Z","type":"VALUATION"}
+{"id":"2026-10-13/dca/skp/1","portfolio":"dca","reason":"data_fetch_failed","ts":"2026-10-13T00:30:00.000Z","type":"SKIPPED"}
+{"id":"2026-10-13/random/skp/1","portfolio":"random","reason":"data_fetch_failed","ts":"2026-10-13T00:30:00.000Z","type":"SKIPPED"}
+{"id":"2026-10-13/value/skp/1","portfolio":"value","reason":"data_fetch_failed","ts":"2026-10-13T00:30:00.000Z","type":"SKIPPED"}
