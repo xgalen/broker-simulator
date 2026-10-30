@@ -1,0 +1,20 @@
+{
+  "action": "hold",
+  "briefHash": "sha256:e433ff9005997f7e95953b25e99540f513d13f8fca7fb9d4ae8b47f9be442b7b",
+  "confidence": 3,
+  "date": "2026-10-30",
+  "decidedAt": "2026-10-30T23:57:45.624Z",
+  "decisionId": "2026-10-30/random/dec",
+  "kind": "control",
+  "meta": {
+    "availableCashEur": 0.04,
+    "depositedTodayEur": 0,
+    "portfolioValueEur": 138.6,
+    "tradesThisMonth": 1
+  },
+  "orders": [],
+  "portfolio": "random",
+  "rationale": "random holds by construction: 2026-10-30 is not a contribution session. It buys once a month and never sells.",
+  "schemaVersion": 1,
+  "sourcesUsed": []
+}
