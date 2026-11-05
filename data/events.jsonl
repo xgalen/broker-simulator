@@ -179,3 +179,6 @@
 {"id":"2026-11-04/dca/skp/1","portfolio":"dca","reason":"data_fetch_failed","ts":"2026-11-04T00:30:00.000Z","type":"SKIPPED"}
 {"id":"2026-11-04/random/skp/1","portfolio":"random","reason":"data_fetch_failed","ts":"2026-11-04T00:30:00.000Z","type":"SKIPPED"}
 {"id":"2026-11-04/value/skp/1","portfolio":"value","reason":"data_fetch_failed","ts":"2026-11-04T00:30:00.000Z","type":"SKIPPED"}
+{"id":"2026-11-05/dca/skp/1","portfolio":"dca","reason":"data_fetch_failed","ts":"2026-11-05T00:30:00.000Z","type":"SKIPPED"}
+{"id":"2026-11-05/random/skp/1","portfolio":"random","reason":"data_fetch_failed","ts":"2026-11-05T00:30:00.000Z","type":"SKIPPED"}
+{"id":"2026-11-05/value/skp/1","portfolio":"value","reason":"data_fetch_failed","ts":"2026-11-05T00:30:00.000Z","type":"SKIPPED"}
